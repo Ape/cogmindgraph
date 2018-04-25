@@ -13,13 +13,20 @@ import numpy as np
 import graphs
 
 
+XAXES = {
+    "time": (lambda data: data["time_sum"], "cumulative playing time (h)"),
+    "turns": (lambda data: data.cumulative("turns"), "cumulative turns taken"),
+    "runs": (lambda data: data["run_count"], "run count"),
+}
+
+
 class Data:
-    def __init__(self, items, turns_xaxis):
-        self.items = list(items)
-        self.turns_xaxis = turns_xaxis
+    def __init__(self, items, xaxis):
+        self._items = list(items)
+        self._xaxis = xaxis
 
     def select(self, field):
-        return (x[field] for x in self.items)
+        return (x[field] for x in self._items)
 
     def __getitem__(self, field):
         return self._to_array(self.select(field))
@@ -31,16 +38,10 @@ class Data:
         return self._to_array(itertools.accumulate(self.select(field), max))
 
     def xaxis(self):
-        if self.turns_xaxis:
-            return self.cumulative("turns")
-
-        return self["time_sum"]
+        return XAXES[self._xaxis][0](self)
 
     def xlabel(self):
-        if self.turns_xaxis:
-            return "cumulative turns taken"
-
-        return "cumulative playing time (h)"
+        return XAXES[self._xaxis][1]
 
     def _to_array(self, generator):
         return np.array(list(generator))
@@ -67,6 +68,7 @@ def parse_game(path):
 
     return {
         "win": matches("Win Type: (\d+)"),
+        "run_count": find("Game No.: (\d+)"),
         "score": find("\s+TOTAL SCORE: (\d+)"),
         "time": find("Play Time: (\d+) min") / 60,
         "time_sum": find("Cumulative: (\d+) min") / 60,
@@ -120,8 +122,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=pathlib.Path,
                         help="Path to Cogmind scores folder")
-    parser.add_argument("--turns", action="store_true",
-                        help="Use turns as the X axis instead of playing time")
+    parser.add_argument("--xaxis", default="time",
+                        help="X axis variable (time, turns, runs)")
     parser.add_argument("--name",
                         help="Player name")
     parser.add_argument("--output", type=pathlib.Path,
@@ -134,7 +136,7 @@ if __name__ == "__main__":
     scores = [x for x in scores if "_log" not in x.name]
 
     if scores:
-        data = Data((parse_game(x) for x in scores), args.turns)
+        data = Data((parse_game(x) for x in scores), args.xaxis)
         plot_all(data, args)
     else:
         print("Could not find any score files!")
