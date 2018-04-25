@@ -9,19 +9,17 @@ def line_plot(ax, data, y):
 
 
 def scatter_plot(ax, data, y):
-    mask = data["score"] > 750
-    x = data.xaxis()[mask]
-    y = y[mask]
+    x = data.xaxis()
     ax.scatter(x, y)
     trendline(ax, x, y)
 
-    wins = data["win"][mask]
-    win_mask = wins != None
+    wins = data["win"]
+    win_mask = wins >= 0
     ax.scatter(x[win_mask], y[win_mask], color="C1", label="Win")
     ax.legend(loc="upper left", prop={"size": 8})
 
     for i, win in enumerate(wins):
-        if win:
+        if win > 0:
             ax.annotate(win, (x[i], y[i]), size=6, weight="bold",
                         xytext=(-2, -2.5), textcoords="offset points")
 

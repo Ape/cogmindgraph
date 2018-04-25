@@ -22,11 +22,11 @@ XAXES = {
 
 class Data:
     def __init__(self, items, xaxis):
-        self._items = list(items)
+        self._items = items
         self._xaxis = xaxis
 
     def select(self, field):
-        return (x[field] for x in self._items)
+        return (x[field] for x in self._items if self._is_valid(x))
 
     def __getitem__(self, field):
         return self._to_array(self.select(field))
@@ -46,28 +46,39 @@ class Data:
     def _to_array(self, generator):
         return np.array(list(generator))
 
+    def _is_valid(self, item):
+        return item["time"] > 0 and item["score"] > 750
+
 
 def sort_scores(filename):
     parts = filename.name.split("-")
     return parts[1], parts[2]
 
 
+def parse_games(scores):
+    for path in scores:
+        game = parse_game(path)
+        if game:
+            yield game
+
+
 def parse_game(path):
     with open(path) as game_file:
         game = game_file.read()
 
-    def find(pattern):
-        return int(re.search(pattern, game)[1])
-
-    def matches(pattern):
+    def find(pattern, default=None):
         match = re.search(pattern, game)
         if match:
             return int(match[1])
 
+        if default is not None:
+            return default
+
+        print(f"Warning: Can not find '{pattern}' in '{path}'")
         return None
 
     return {
-        "win": matches("Win Type: (\d+)"),
+        "win": find("Win Type: (\d+)", -1),
         "run_count": find("Game No.: (\d+)"),
         "score": find("\s+TOTAL SCORE: (\d+)"),
         "time": find("Play Time: (\d+) min") / 60,
@@ -76,7 +87,7 @@ def parse_game(path):
         "lore": find("Lore%: (\d+)"),
         "speed": find("Average Speed \(%\)\s+(\d+)"),
         "prototypes": find("Prototype IDs \((\d+)\)"),
-        "parts": find("\[Rating: (\d+)\]"),
+        "parts": find("\[Rating: (\d+)\]", 0),
         "damage": find("Damage Inflicted\s+(\d+)"),
         "capacity": find("Average Capacity\s+(\d+)"),
         "best_group": find("Highest-Rated Group\s+(\d+)"),
@@ -118,6 +129,19 @@ def plot_all(data, args):
         plt.show()
 
 
+def main(args):
+    scores = sorted(args.path.glob("*-*-*-*-*.txt"), key=sort_scores)
+    scores = (x for x in scores if "_log" not in x.name)
+    games = list(parse_games(scores))
+
+    if not games:
+        print("Could not find any score files!")
+        return
+
+    data = Data(games, args.xaxis)
+    plot_all(data, args)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=pathlib.Path,
@@ -130,13 +154,4 @@ if __name__ == "__main__":
                         help="Path to output folder")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
-    args = parser.parse_args()
-
-    scores = sorted(args.path.glob("*-*-*-*-*.txt"), key=sort_scores)
-    scores = [x for x in scores if "_log" not in x.name]
-
-    if scores:
-        data = Data((parse_game(x) for x in scores), args.xaxis)
-        plot_all(data, args)
-    else:
-        print("Could not find any score files!")
+    main(parser.parse_args())
