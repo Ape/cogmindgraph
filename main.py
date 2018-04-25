@@ -46,6 +46,11 @@ class Data:
         return np.array(list(generator))
 
 
+def sort_scores(filename):
+    parts = filename.name.split("-")
+    return parts[1], parts[2]
+
+
 def parse_game(path):
     with open(path) as game_file:
         game = game_file.read()
@@ -125,7 +130,7 @@ if __name__ == "__main__":
                         help="Resolution for output files")
     args = parser.parse_args()
 
-    scores = sorted(args.path.glob("*-*-*-*-*.txt"))
+    scores = sorted(args.path.glob("*-*-*-*-*.txt"), key=sort_scores)
     scores = [x for x in scores if "_log" not in x.name]
 
     if scores:
