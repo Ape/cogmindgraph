@@ -125,6 +125,11 @@ if __name__ == "__main__":
                         help="Resolution for output files")
     args = parser.parse_args()
 
-    scores = sorted(args.path.iterdir())
-    data = Data((parse_game(x) for x in scores), args.turns)
-    plot_all(data, args)
+    scores = sorted(args.path.glob("*-*-*-*-*.txt"))
+    scores = [x for x in scores if "_log" not in x.name]
+
+    if scores:
+        data = Data((parse_game(x) for x in scores), args.turns)
+        plot_all(data, args)
+    else:
+        print("Could not find any score files!")
