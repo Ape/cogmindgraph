@@ -114,7 +114,7 @@ def plot_all(data, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=pathlib.Path,
-                        help="Path to Cogmind folder")
+                        help="Path to Cogmind scores folder")
     parser.add_argument("--turns", action="store_true",
                         help="Use turns as the X axis instead of playing time")
     parser.add_argument("--name",
@@ -125,6 +125,6 @@ if __name__ == "__main__":
                         help="Resolution for output files")
     args = parser.parse_args()
 
-    scores = sorted((args.path / "scores").iterdir())
+    scores = sorted(args.path.iterdir())
     data = Data((parse_game(x) for x in scores), args.turns)
     plot_all(data, args)

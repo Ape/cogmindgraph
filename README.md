@@ -15,7 +15,7 @@
 usage: main.py [-h] [--turns] [--name NAME] [--output OUTPUT] [--dpi DPI] path
 
 positional arguments:
-  path             Path to Cogmind folder
+  path             Path to Cogmind scores folder
 
 optional arguments:
   -h, --help       show this help message and exit
@@ -27,5 +27,5 @@ optional arguments:
 
 For example:
 ```
-./main.py /path/to/cogmind --output /path/to/output
+./main.py /path/to/cogmind/scores --output /path/to/output
 ```
