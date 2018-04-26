@@ -16,7 +16,7 @@ import graphs
 XAXES = {
     "time": (lambda data: data["time_sum"], "cumulative playing time (h)"),
     "turns": (lambda data: data.cumulative("turns"), "cumulative turns taken"),
-    "runs": (lambda data: data["run_count"], "run count"),
+    "runs": (lambda data: data.count(), "run count"),
 }
 
 
@@ -36,6 +36,9 @@ class Data:
 
     def max(self, field):
         return self._to_array(itertools.accumulate(self.select(field), max))
+
+    def count(self):
+        return self._to_array(range(1, len(self._items) + 1))
 
     def xaxis(self):
         return XAXES[self._xaxis][0](self)
@@ -84,7 +87,6 @@ def parse_game(path):
 
     return {
         "win": find("Win Type: (\d+)", -1),
-        "run_count": find("Game No.: (\d+)"),
         "score": find("\s+TOTAL SCORE: (-?\d+)"),
         "time": find("Play Time: (\d+) min") / 60,
         "time_sum": find("Cumulative: (\d+) min") / 60,
