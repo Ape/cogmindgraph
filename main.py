@@ -3,6 +3,7 @@
 import argparse
 import inspect
 import itertools
+import os
 import pathlib
 import re
 
@@ -150,6 +151,13 @@ def main(args):
     if not games:
         print("Could not find any valid score files!")
         return
+
+    if "output" in args and not args.output.is_dir():
+        try:
+            os.mkdir(args.output)
+        except IOError as e:
+            print(f"Error: Failed to create output directory: {e.strerror}")
+            return
 
     data = Data(games, args.xaxis)
     plot_all(data, args)
