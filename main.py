@@ -26,7 +26,7 @@ class Data:
         self._xaxis = xaxis
 
     def select(self, field):
-        return (x[field] for x in self._items if self._is_valid(x))
+        return (x[field] for x in self._items)
 
     def __getitem__(self, field):
         return self._to_array(self.select(field))
@@ -46,9 +46,6 @@ class Data:
     def _to_array(self, generator):
         return np.array(list(generator))
 
-    def _is_valid(self, item):
-        return item["time"] > 0 and item["score"] > 750
-
 
 def sort_scores(filename):
     parts = filename.name.split("-")
@@ -63,7 +60,8 @@ def parse_games(scores):
             print(f"Warning: {e}")
             continue
 
-        yield game
+        if game["time"] > 0 and game["score"] > 750:
+            yield game
 
 
 class ParseError(Exception):
