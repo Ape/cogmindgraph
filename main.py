@@ -144,6 +144,10 @@ def plot_all(data, args):
 
 
 def main(args):
+    if not args.path.is_dir():
+        print(f"Error: '{args.path}' is not a directory!")
+        return
+
     scores = sorted(args.path.glob("*-*-*-*-*.txt"), key=sort_scores)
     scores = (x for x in scores if "_log" not in x.name)
     games = list(parse_games(scores))
