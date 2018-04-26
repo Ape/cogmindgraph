@@ -105,7 +105,7 @@ def plot(graph, data, args):
     filename, func = graph
 
     def name_text():
-        if args.name:
+        if "name" in args:
             return f"{args.name}'s "
 
         return ""
@@ -123,7 +123,7 @@ def plot(graph, data, args):
     ax.set_xlim(0, ax.get_xticks()[-1])
     ax.set_ylim(0, ax.get_yticks()[-1])
 
-    if args.output:
+    if "output" in args:
         plt.savefig((args.output / filename).with_suffix(".png"), dpi=args.dpi)
 
 
@@ -132,7 +132,7 @@ def plot_all(data, args):
                                     predicate=inspect.isfunction):
         plot(graph, data, args)
 
-    if not args.output:
+    if "output" not in args:
         plt.show()
 
 
@@ -150,14 +150,16 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("path", type=pathlib.Path,
                         help="Path to Cogmind scores folder")
-    parser.add_argument("--xaxis", default="time",
-                        help="X axis variable (time, turns, runs)")
-    parser.add_argument("--name",
+    parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
+                        help="X axis variable")
+    parser.add_argument("--name", default=argparse.SUPPRESS,
                         help="Player name")
     parser.add_argument("--output", type=pathlib.Path,
+                        default=argparse.SUPPRESS,
                         help="Path to output folder")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
