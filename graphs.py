@@ -46,7 +46,18 @@ def trendline(ax, x, y):
 class Graphs:
     def lore(ax, data):
         x = data.xaxis()
-        ax.plot(x, data["lore"])
+
+        previous = 0, 0
+        for i, point in enumerate(data["lore"]):
+            style = "-"
+            if data["easy"][i] == 1:
+                style = "--"
+            elif data["easy"][i] == 2:
+                style = ":"
+
+            ax.plot([previous[0], x[i]], [previous[1], point], color="C0", linestyle=style)
+            previous = x[i], point
+
         ax.set_ylim(ymax=100)
         ax.set_ylabel("lore%")
         ax.set_title("Lore")
