@@ -82,7 +82,7 @@ def parse_game(path):
         game = game_file.read()
 
     def find(pattern, default=None):
-        match = re.search(pattern, game)
+        match = re.search(pattern, game, re.MULTILINE | re.DOTALL)
         if match:
             return int(match[1])
 
@@ -100,10 +100,17 @@ def parse_game(path):
         "turns": find("Turns Passed\s+(\d+)"),
         "lore": find("Lore%: (\d+)"),
         "speed": find("Average Speed \(%\)\s+(\d+)"),
+        "regions": find("Regions Visited\s+(\d+)"),
         "prototypes": find("Prototype IDs \((\d+)\)"),
         "parts": find("\[Rating: (\d+)\]", 0),
+        "slots": find("Average Slot Usage \(%\)\s+(\d+)"),
         "damage": find("Damage Inflicted\s+(\d+)"),
+        "melee": find("Melee\s+(\d+)"),
+        "em": find("Damage Inflicted.*Electromagnetic\s+(\d+)"),
+        "core": find("Average Core Remaining \(%\)\s+(\d+)"),
+        "hacking": find("Offensive Hacking\s+(\d+)", 0),
         "capacity": find("Average Capacity\s+(\d+)"),
+        "influence": find("Average Influence\s+(\d+)"),
         "best_group": find("Highest-Rated Group\s+(\d+)"),
     }
 
@@ -128,7 +135,7 @@ def plot(graph, data, args):
     func(ax, data)
 
     ax.set_xlim(0, ax.get_xticks()[-1])
-    ax.set_ylim(0, ax.get_yticks()[-1])
+    ax.set_ylim(ymax=ax.get_yticks()[-1])
 
     if "output" in args:
         plt.savefig((args.output / filename).with_suffix(".png"), dpi=args.dpi)
