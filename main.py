@@ -25,17 +25,22 @@ class Data:
         self._items = items
         self._xaxis = xaxis
 
-    def select(self, field):
-        return (x[field] for x in self._items)
+    def select(self, field, where=lambda x: True):
+        return (x[field] for x in self._items if where(x))
 
     def __getitem__(self, field):
         return self._to_array(self.select(field))
 
-    def cumulative(self, field):
-        return self._to_array(itertools.accumulate(self.select(field)))
+    def array(self, *args, **kwargs):
+        return self._to_array(self.select(*args, **kwargs))
 
-    def max(self, field):
-        return self._to_array(itertools.accumulate(self.select(field), max))
+    def cumulative(self, *args, **kwargs):
+        result = itertools.accumulate(self.select(*args, **kwargs))
+        return self._to_array(result)
+
+    def max(self, *args, **kwargs):
+        result = itertools.accumulate(self.select(*args, **kwargs), max)
+        return self._to_array(result)
 
     def count(self):
         return self._to_array(range(1, len(self._items) + 1))
@@ -87,6 +92,7 @@ def parse_game(path):
 
     return {
         "win": find("Win Type: (\d+)", -1),
+        "easy": find("Easy Mode: (\d+)"),
         "score": find("\s+TOTAL SCORE: (-?\d+)"),
         "time": find("Play Time: (\d+) min") / 60,
         "time_sum": find("Cumulative: (\d+) min") / 60,

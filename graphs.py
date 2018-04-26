@@ -2,26 +2,38 @@ import matplotlib.ticker
 import numpy as np
 
 
-def line_plot(ax, data, y):
-    x = data.xaxis()
-    ax.plot(x, y)
-    trendline(ax, x, y)
-
-
 def scatter_plot(ax, data, y):
     x = data.xaxis()
-    ax.scatter(x, y)
+    win = data["win"] >= 0
+    normal = data["easy"] == 0
+    easy = data["easy"] == 1
+    easiest = data["easy"] == 2
+
+    ax.scatter(x[~win & normal], y[~win & normal], color="C0")
+
+    if win.any():
+        ax.scatter(x[win & normal], y[win & normal], color="C1", label="win")
+
+    if easy.any():
+        ax.scatter(x[~win & easy], y[~win & easy], color="C0",
+                   facecolors="none", label="easy")
+        ax.scatter(x[win & easy], y[win & easy], color="C1", facecolors="w")
+
+    if easiest.any():
+        ax.scatter(x[~win & easiest], y[~win & easiest], color="C0",
+                   facecolors="none", linestyle=":", label="easiest")
+        ax.scatter(x[win & easiest], y[win & easiest], color="C1",
+                   facecolors="w", linestyle=":")
+
+    for i, win_type in enumerate(data["win"]):
+        if win_type > 0:
+            ax.annotate(win_type, (x[i], y[i]), size=6, weight="bold",
+                        xytext=(-2, -2.25), textcoords="offset points")
+
     trendline(ax, x, y)
 
-    wins = data["win"]
-    win_mask = wins >= 0
-    ax.scatter(x[win_mask], y[win_mask], color="C1", label="Win")
-    ax.legend(loc="upper left", prop={"size": 8})
-
-    for i, win in enumerate(wins):
-        if win > 0:
-            ax.annotate(win, (x[i], y[i]), size=6, weight="bold",
-                        xytext=(-2, -2.5), textcoords="offset points")
+    if win.any() or easy.any() or easiest.any():
+        ax.legend(loc="upper left", prop={"size": 8})
 
 
 def trendline(ax, x, y):
@@ -33,15 +45,34 @@ def trendline(ax, x, y):
 
 class Graphs:
     def lore(ax, data):
-        line_plot(ax, data, data["lore"])
+        x = data.xaxis()
+        ax.plot(x, data["lore"])
         ax.set_ylim(ymax=100)
         ax.set_ylabel("lore%")
         ax.set_title("Lore")
 
     def high_score(ax, data):
-        line_plot(ax, data, data.max("score"))
+        def normal(item):
+            return item["easy"] == 0
+
+        def easy(item):
+            return item["easy"] == 1
+
+        def easiest(item):
+            return item["easy"] == 2
+
+        x = data.xaxis()
+        ax.plot(x[normal(data)], data.max("score", where=normal),
+                label="normal")
+        ax.plot(x[easy(data)], data.max("score", where=easy), color="C0",
+                linestyle="--", label="easy")
+        ax.plot(x[easiest(data)], data.max("score", where=easiest), color="C0",
+                linestyle=":", label="easiest")
         ax.set_ylabel("score")
         ax.set_title("High score")
+
+        if easy(data).any() or easiest(data).any():
+            ax.legend(loc="upper left", prop={"size": 8})
 
     def score(ax, data):
         scatter_plot(ax, data, data["score"])
