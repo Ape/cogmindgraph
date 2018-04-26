@@ -57,9 +57,17 @@ def sort_scores(filename):
 
 def parse_games(scores):
     for path in scores:
-        game = parse_game(path)
-        if game:
-            yield game
+        try:
+            game = parse_game(path)
+        except ParseError as e:
+            print(f"Warning: {e}")
+            continue
+
+        yield game
+
+
+class ParseError(Exception):
+    pass
 
 
 def parse_game(path):
@@ -74,8 +82,7 @@ def parse_game(path):
         if default is not None:
             return default
 
-        print(f"Warning: Can not find '{pattern}' in '{path}'")
-        return None
+        raise ParseError(f"Can not find '{pattern}' in '{path.name}'")
 
     return {
         "win": find("Win Type: (\d+)", -1),
@@ -135,7 +142,7 @@ def main(args):
     games = list(parse_games(scores))
 
     if not games:
-        print("Could not find any score files!")
+        print("Could not find any valid score files!")
         return
 
     data = Data(games, args.xaxis)
