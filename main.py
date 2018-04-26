@@ -155,6 +155,10 @@ def main(args):
     if not games:
         print("Could not find any valid score files!")
         return
+    elif len(games) == 1:
+        print("Found only one score file!")
+        print("At least two are required for meaningful graphs.")
+        return
 
     if "output" in args and not args.output.is_dir():
         try:
