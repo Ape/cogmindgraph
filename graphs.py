@@ -12,7 +12,6 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
     easiest = data["easy"] == 2
 
     ax.scatter(x[~win & normal], y[~win & normal], color="C0")
-    ax.set_ylim(ymin=ymin)
 
     if win.any():
         ax.scatter(x[win & normal], y[win & normal], color="C1", label="win")
@@ -27,6 +26,8 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
                    facecolors="none", linestyle=":", label="easiest")
         ax.scatter(x[win & easiest], y[win & easiest], color="C1",
                    facecolors="w", linestyle=":")
+
+    ax.set_ylim(ymin=ymin)
 
     for i, win_type in enumerate(data["win"]):
         if win_type > 0:
@@ -151,6 +152,7 @@ class Graphs:
 
     def core(ax, data):
         scatter_plot(ax, data, data["core"])
+        ax.set_ylim(ymax=100)
         ax.set_ylabel("average core remaining (%)")
         ax.set_title("Core integrity")
 
