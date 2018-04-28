@@ -57,11 +57,6 @@ class Data:
         return np.array(list(generator))
 
 
-def sort_scores(filename):
-    parts = filename.name.split("-")
-    return parts[1], parts[2]
-
-
 def parse_games(scores):
     for path in scores:
         try:
@@ -173,9 +168,9 @@ def main(args):
         print(f"Error: '{args.path}' is not a directory!")
         return
 
-    scores = sorted(args.path.glob("*-*-*-*-*.txt"), key=sort_scores)
+    scores = args.path.glob("*-*-*-*-*.txt")
     scores = (x for x in scores if "_log" not in x.name)
-    games = list(parse_games(scores))
+    games = list(sorted(parse_games(scores), key=lambda x: x["date"]))
 
     if not games:
         print("Could not find any valid score files!")
