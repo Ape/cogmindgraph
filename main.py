@@ -82,7 +82,7 @@ def parse_game(path):
         game = game_file.read()
 
     def find(pattern, default=None):
-        match = re.search(pattern, game, re.MULTILINE | re.DOTALL)
+        match = re.search(pattern, game, re.DOTALL)
         if match:
             return float(match[1])
 
@@ -96,17 +96,17 @@ def parse_game(path):
         "easy": find("Easy Mode: (\d+)"),
         "score": find("\s+TOTAL SCORE: (-?\d+)"),
         "time": find("Play Time: (\d+) min") / 60,
-        "time_sum": find("Cumulative: (\d+) min") / 60,
+        "time_sum": find("Play Time:.*?Cumulative: (\d+) min") / 60,
         "turns": find("Turns Passed\s+(\d+)"),
         "lore": find("Lore%: (\d+)"),
         "speed": find("Average Speed \(%\)\s+(\d+)"),
         "regions": find("Regions Visited\s+(\d+)"),
         "prototypes": find("Prototype IDs \((\d+)\)"),
-        "parts": find("\[Rating: (\d+)\]", 0),
+        "parts": find("Peak State.*?\[Rating: (\d+)\]", 0),
         "slots": find("Average Slot Usage \(%\)\s+(\d+)"),
         "damage": find("Damage Inflicted\s+(\d+)"),
-        "melee": find("Melee\s+(\d+)"),
-        "em": find("Damage Inflicted.*Electromagnetic\s+(\d+)"),
+        "melee": find("Damage Inflicted.*?Melee\s+(\d+)"),
+        "em": find("Damage Inflicted.*?Electromagnetic\s+(\d+)"),
         "core": find("Average Core Remaining \(%\)\s+(\d+)"),
         "hacking": find("Offensive Hacking\s+(\d+)", 0),
         "capacity": find("Average Capacity\s+(\d+)"),
