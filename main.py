@@ -80,7 +80,7 @@ class ParseError(Exception):
 
 def parse_game(path):
     def parse_date(path):
-        parts = re.search("^\w+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
+        parts = re.search("^[\w\s]+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
                           path.name)
         return np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()))
 
