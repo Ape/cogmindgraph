@@ -84,7 +84,7 @@ def parse_game(path):
     def find(pattern, default=None):
         match = re.search(pattern, game, re.MULTILINE | re.DOTALL)
         if match:
-            return int(match[1])
+            return float(match[1])
 
         if default is not None:
             return default

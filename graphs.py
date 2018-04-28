@@ -31,7 +31,7 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
 
     for i, win_type in enumerate(data["win"]):
         if win_type > 0:
-            ax.annotate(win_type, (x[i], y[i]), size=6, weight="bold",
+            ax.annotate(int(win_type), (x[i], y[i]), size=6, weight="bold",
                         xytext=(-2, -2.25), textcoords="offset points")
 
     trendline(ax, x, y)
@@ -170,20 +170,29 @@ class Graphs:
         ax.yaxis.set_major_locator(locator)
 
     def influence(ax, data):
-        y = np.log2(data["influence"])
+        tick = math.log(200, 2)
+        cutoff = tick - 6
+
+        y = data["influence"]
+        y = np.log2(y.clip(2**cutoff))
         scatter_plot(ax, data, y, ymin=None)
         ax.set_ylabel("average influence")
         ax.set_title("Influence")
 
-        tick = math.log(200, 2)
         tick_start = math.floor(min(y) - tick)
         tick_stop = math.ceil(max(y) - tick) + 1
-        ax.set_yticks([x + tick for x in range(tick_start, tick_stop)])
+        ax.set_yticks([tick + x for x in range(tick_start, tick_stop)])
 
-        def exp2_format(value, *args):
-            return int(round(2**value))
+        if min(y) <= cutoff:
+            ax.set_ylim(ymin=cutoff)
 
-        formatter = matplotlib.ticker.FuncFormatter(exp2_format)
+        def format_func(value, *args):
+            if value <= cutoff:
+                return 0
+
+            return f"{2**value:g}"
+
+        formatter = matplotlib.ticker.FuncFormatter(format_func)
         ax.yaxis.set_major_formatter(formatter)
 
     def best_group(ax, data):
