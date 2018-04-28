@@ -12,7 +12,7 @@
 
 ## Usage
 ```
-usage: main.py [-h] [--xaxis {time,turns,runs}] [--name NAME]
+usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--name NAME]
                [--output OUTPUT] [--dpi DPI]
                path
 
@@ -21,7 +21,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --xaxis {time,turns,runs}
+  --xaxis {time,turns,runs,date}
                         X axis variable (default: time)
   --name NAME           Player name
   --output OUTPUT       Path to output folder

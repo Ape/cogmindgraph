@@ -1,5 +1,6 @@
 import math
 
+import matplotlib.dates
 import matplotlib.ticker
 import numpy as np
 
@@ -41,6 +42,9 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
 
 
 def trendline(ax, x, y):
+    if np.issubdtype(x.dtype, np.datetime64):
+        x = matplotlib.dates.date2num(x)
+
     trend_locs = [0, ax.get_xticks()[-1]]
     trend = np.poly1d(np.polyfit(x, y, 1))
     ax.autoscale(False)

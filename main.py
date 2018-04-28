@@ -18,6 +18,7 @@ XAXES = {
     "time": (lambda data: data["time_sum"], "cumulative playing time (h)"),
     "turns": (lambda data: data.cumulative("turns"), "cumulative turns taken"),
     "runs": (lambda data: data.count(), "run count"),
+    "date": (lambda data: data["date"], "date"),
 }
 
 
@@ -78,8 +79,10 @@ class ParseError(Exception):
 
 
 def parse_game(path):
-    with open(path) as game_file:
-        game = game_file.read()
+    def parse_date(path):
+        parts = re.search("^\w+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
+                          path.name)
+        return np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()))
 
     def find(pattern, default=None):
         match = re.search(pattern, game, re.DOTALL)
@@ -91,7 +94,11 @@ def parse_game(path):
 
         raise ParseError(f"Can not find '{pattern}' in '{path.name}'")
 
+    with open(path) as game_file:
+        game = game_file.read()
+
     return {
+        "date": parse_date(path),
         "win": find("Win Type: (\d+)", -1),
         "easy": find("Easy Mode: (\d+)"),
         "score": find("\s+TOTAL SCORE: (-?\d+)"),
@@ -129,12 +136,23 @@ def plot(graph, data, args):
     ax.set_xlabel(data.xlabel())
 
     formatter = matplotlib.ticker.EngFormatter(sep="")
-    ax.xaxis.set_major_formatter(formatter)
     ax.yaxis.set_major_formatter(formatter)
+
+    if np.issubdtype(data.xaxis().dtype, np.datetime64):
+        fig.autofmt_xdate()
+        margin = 0.2 * (max(data.xaxis()) - min(data.xaxis()))
+        ax.set_xlim(min(data.xaxis()) - margin,
+                    max(data.xaxis()) + margin)
+    else:
+        ax.xaxis.set_major_formatter(formatter)
 
     func(ax, data)
 
-    ax.set_xlim(0, ax.get_xticks()[-1])
+    if np.issubdtype(data.xaxis().dtype, np.datetime64):
+        ax.set_xlim(ax.get_xticks()[0], ax.get_xticks()[-1])
+    else:
+        ax.set_xlim(0, ax.get_xticks()[-1])
+
     ax.set_ylim(ymax=ax.get_yticks()[-1])
 
     if "output" in args:
