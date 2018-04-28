@@ -155,7 +155,7 @@ class Graphs:
         ax.set_title("Electromagnetic damage")
 
     def core(ax, data):
-        scatter_plot(ax, data, data["core"])
+        scatter_plot(ax, data, data["core"], legend_loc="lower left")
         ax.set_ylim(ymax=100)
         ax.set_ylabel("average core remaining (%)")
         ax.set_title("Core integrity")
