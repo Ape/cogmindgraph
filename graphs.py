@@ -56,12 +56,15 @@ def divide_safe(a, b):
 
 
 class Graphs:
-    def lore(ax, data):
+    def completion(ax, data):
         x = data.xaxis()
-        ax.plot(x, data["lore"])
+        ax.plot(x, data["lore"], label="lore")
+        ax.plot(x, data["gallery"], label="gallery")
+        ax.plot(x, data["achievements"], label="achievements")
         ax.set_ylim(0, 100)
-        ax.set_ylabel("lore%")
-        ax.set_title("Lore")
+        ax.legend(loc="upper left", prop={"size": 8})
+        ax.set_ylabel("completion percentage")
+        ax.set_title("Completion")
 
     def high_score(ax, data):
         def normal(item):

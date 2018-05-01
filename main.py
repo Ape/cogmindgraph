@@ -101,6 +101,8 @@ def parse_game(path):
         "time_sum": find("Play Time:.*?Cumulative: (\d+) min") / 60,
         "turns": find("Turns Passed\s+(\d+)"),
         "lore": find("Lore%: (\d+)"),
+        "gallery": find("Gallery%: (\d+)"),
+        "achievements": find("Achievement%: (\d+)", 0),
         "speed": find("Average Speed \(%\)\s+(\d+)"),
         "regions": find("Regions Visited\s+(\d+)"),
         "prototypes": find("Prototype IDs \((\d+)\)"),
