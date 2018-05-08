@@ -152,17 +152,13 @@ def plot(graph, data, args):
 
     ax.set_ylim(ymax=ax.get_yticks()[-1])
 
-    if "output" in args:
-        plt.savefig((args.output / filename).with_suffix(".png"), dpi=args.dpi)
+    plt.savefig((args.output / filename).with_suffix(".png"), dpi=args.dpi)
 
 
 def plot_all(data, args):
     for graph in inspect.getmembers(graphs.Graphs,
                                     predicate=inspect.isfunction):
         plot(graph, data, args)
-
-    if "output" not in args:
-        plt.show()
 
 
 def main(args):
@@ -182,7 +178,7 @@ def main(args):
         print("At least two are required for meaningful graphs.")
         return
 
-    if "output" in args and not args.output.is_dir():
+    if not args.output.is_dir():
         try:
             os.mkdir(args.output)
         except IOError as e:
@@ -198,13 +194,12 @@ if __name__ == "__main__":
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("path", type=pathlib.Path,
                         help="Path to Cogmind scores folder")
+    parser.add_argument("output", type=pathlib.Path,
+                        help="Path to output folder")
     parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
                         help="X axis variable")
     parser.add_argument("--name", default=argparse.SUPPRESS,
                         help="Player name")
-    parser.add_argument("--output", type=pathlib.Path,
-                        default=argparse.SUPPRESS,
-                        help="Path to output folder")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
     main(parser.parse_args())

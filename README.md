@@ -12,23 +12,22 @@
 
 ## Usage
 ```
-usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--name NAME]
-               [--output OUTPUT] [--dpi DPI]
-               path
+usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--name NAME] [--dpi DPI]
+               path output
 
 positional arguments:
   path                  Path to Cogmind scores folder
+  output                Path to output folder
 
 optional arguments:
   -h, --help            show this help message and exit
   --xaxis {time,turns,runs,date}
                         X axis variable (default: time)
   --name NAME           Player name
-  --output OUTPUT       Path to output folder
   --dpi DPI             Resolution for output files (default: 200)
 ```
 
 For example:
 ```
-./main.py /path/to/cogmind/scores --output /path/to/output
+./main.py /path/to/cogmind/scores /path/to/output
 ```
