@@ -75,7 +75,7 @@ class ParseError(Exception):
 
 def parse_game(path):
     def parse_date(path):
-        parts = re.search("^[\w\s]+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
+        parts = re.search(r"^[\w\s]+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
                           path.name)
         return np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()))
 
@@ -94,28 +94,28 @@ def parse_game(path):
 
     return {
         "date": parse_date(path),
-        "win": find("Win Type: (\d+)", -1),
-        "easy": find("Easy Mode: (\d+)"),
-        "score": find("\s+TOTAL SCORE: (-?\d+)"),
-        "time": find("Play Time: (\d+) min") / 60,
-        "time_sum": find("Play Time:.*?Cumulative: (\d+) min") / 60,
-        "turns": find("Turns Passed\s+(\d+)"),
-        "lore": find("Lore%: (\d+)"),
-        "gallery": find("Gallery%: (\d+)"),
-        "achievements": find("Achievement%: (\d+)", 0),
-        "speed": find("Average Speed \(%\)\s+(\d+)"),
-        "regions": find("Regions Visited\s+(\d+)"),
-        "prototypes": find("Prototype IDs \((\d+)\)"),
-        "parts": find("Peak State.*?\[Rating: (\d+)\]", 0),
-        "slots": find("Average Slot Usage \(%\)\s+(\d+)"),
-        "damage": find("Damage Inflicted\s+(\d+)"),
-        "melee": find("Damage Inflicted.*?Melee\s+(\d+)"),
-        "em": find("Damage Inflicted.*?Electromagnetic\s+(\d+)"),
-        "core": find("Average Core Remaining \(%\)\s+(\d+)"),
-        "hacking": find("Offensive Hacking\s+(\d+)", 0),
-        "capacity": find("Average Capacity\s+(\d+)"),
-        "influence": find("Average Influence\s+(\d+)"),
-        "best_group": find("Highest-Rated Group\s+(\d+)"),
+        "win": find(r"Win Type: (\d+)", -1),
+        "easy": find(r"Easy Mode: (\d+)"),
+        "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
+        "time": find(r"Play Time: (\d+) min") / 60,
+        "time_sum": find(r"Play Time:.*?Cumulative: (\d+) min") / 60,
+        "turns": find(r"Turns Passed\s+(\d+)"),
+        "lore": find(r"Lore%: (\d+)"),
+        "gallery": find(r"Gallery%: (\d+)"),
+        "achievements": find(r"Achievement%: (\d+)", 0),
+        "speed": find(r"Average Speed \(%\)\s+(\d+)"),
+        "regions": find(r"Regions Visited\s+(\d+)"),
+        "prototypes": find(r"Prototype IDs \((\d+)\)"),
+        "parts": find(r"Peak State.*?\[Rating: (\d+)\]", 0),
+        "slots": find(r"Average Slot Usage \(%\)\s+(\d+)"),
+        "damage": find(r"Damage Inflicted\s+(\d+)"),
+        "melee": find(r"Damage Inflicted.*?Melee\s+(\d+)"),
+        "em": find(r"Damage Inflicted.*?Electromagnetic\s+(\d+)"),
+        "core": find(r"Average Core Remaining \(%\)\s+(\d+)"),
+        "hacking": find(r"Offensive Hacking\s+(\d+)", 0),
+        "capacity": find(r"Average Capacity\s+(\d+)"),
+        "influence": find(r"Average Influence\s+(\d+)"),
+        "best_group": find(r"Highest-Rated Group\s+(\d+)"),
     }
 
 
