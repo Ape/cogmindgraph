@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import collections
 import inspect
 import itertools
 import os
@@ -24,7 +25,7 @@ XAXES = {
 
 class Data:
     def __init__(self, items, xaxis):
-        self._items = items
+        self._items = list(sorted(items, key=lambda x: x["date"]))
         self._xaxis = xaxis
 
     def select(self, field, where=lambda x: True):
@@ -57,16 +58,16 @@ class Data:
         return np.array(list(generator))
 
 
-def parse_games(scores):
-    for path in scores:
+def parse_games(score_files):
+    for path in score_files:
         try:
-            game = parse_game(path)
+            player, game = parse_game(path)
         except ParseError as e:
             print(f"Warning: {e}")
             continue
 
         if game["time"] > 0 and game["score"] > 750:
-            yield game
+            yield player, game
 
 
 class ParseError(Exception):
@@ -74,10 +75,12 @@ class ParseError(Exception):
 
 
 def parse_game(path):
-    def parse_date(path):
-        parts = re.search(r"^[\w\s]+-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-",
-                          path.name)
-        return np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()))
+    def parse_filename(path):
+        parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
+                          r"-\d+--?\d+[_\w+]*\.txt$", path.name)
+        player = parts[1].replace("/", "").replace(".", "")
+        date = np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()[1:]))
+        return player, date
 
     def find(pattern, default=None):
         match = re.search(pattern, game, re.DOTALL)
@@ -92,8 +95,10 @@ def parse_game(path):
     with open(path) as game_file:
         game = game_file.read()
 
-    return {
-        "date": parse_date(path),
+    player, date = parse_filename(path)
+
+    return player, {
+        "date": date,
         "win": find(r"Win Type: (\d+)", -1),
         "easy": find(r"Easy Mode: (\d+)"),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
@@ -119,17 +124,16 @@ def parse_game(path):
     }
 
 
-def plot(graph, data, args):
+def sort_players(item):
+    player, games = item
+    return -len(games), player.lower()
+
+
+def plot(graph, data, player, output_dir, args):
     filename, func = graph
 
-    def name_text():
-        if "name" in args:
-            return f"{args.name}'s "
-
-        return ""
-
     fig, ax = plt.subplots()
-    fig.suptitle(f"{name_text()}Cogmind progression", fontsize=8)
+    fig.suptitle(f"{player}'s Cogmind progression", fontsize=8)
     ax.set_xlabel(data.xlabel())
 
     formatter = matplotlib.ticker.EngFormatter(sep="")
@@ -152,13 +156,14 @@ def plot(graph, data, args):
 
     ax.set_ylim(ymax=ax.get_yticks()[-1])
 
-    plt.savefig((args.output / filename).with_suffix(".png"), dpi=args.dpi)
+    plt.savefig((output_dir / filename).with_suffix(".png"), dpi=args.dpi)
+    plt.close(fig)
 
 
-def plot_all(data, args):
+def plot_all(data, player, output_dir, args):
     for graph in inspect.getmembers(graphs.Graphs,
                                     predicate=inspect.isfunction):
-        plot(graph, data, args)
+        plot(graph, data, player, output_dir, args)
 
 
 def main(args):
@@ -166,27 +171,31 @@ def main(args):
         print(f"Error: '{args.path}' is not a directory!")
         return
 
-    scores = args.path.glob("*-*-*-*-*.txt")
-    scores = (x for x in scores if "_log" not in x.name)
-    games = list(sorted(parse_games(scores), key=lambda x: x["date"]))
+    score_files = args.path.glob("*-*-*-*-*.txt")
+    score_files = (x for x in score_files if "_log" not in x.name)
 
-    if not games:
-        print("Could not find any valid score files!")
+    scores = collections.defaultdict(list)
+
+    for player, game in parse_games(score_files):
+        scores[player].append(game)
+
+    scores = {k: v for k, v in scores.items() if len(v) >= 2}
+
+    if not scores:
+        print("Could not find any players with at least 2 games.")
         return
-    elif len(games) == 1:
-        print("Found only one score file!")
-        print("At least two are required for meaningful graphs.")
-        return
 
-    if not args.output.is_dir():
-        try:
-            os.mkdir(args.output)
-        except IOError as e:
-            print(f"Error: Failed to create output directory: {e.strerror}")
-            return
+    if len(scores) > 1:
+        print(f"Plotting {len(scores)} players")
 
-    data = Data(games, args.xaxis)
-    plot_all(data, args)
+    for player, games in sorted(scores.items(), key=sort_players):
+        print(f"{player}: {len(games)} games")
+
+        output_dir = args.output / player
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        data = Data(games, args.xaxis)
+        plot_all(data, player, output_dir, args)
 
 
 if __name__ == "__main__":
@@ -198,8 +207,6 @@ if __name__ == "__main__":
                         help="Path to output folder")
     parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
                         help="X axis variable")
-    parser.add_argument("--name", default=argparse.SUPPRESS,
-                        help="Player name")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
     main(parser.parse_args())
