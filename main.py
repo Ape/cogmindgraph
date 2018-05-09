@@ -4,6 +4,7 @@ import argparse
 import collections
 import inspect
 import itertools
+import multiprocessing
 import os
 import pathlib
 import re
@@ -124,11 +125,6 @@ def parse_game(path):
     }
 
 
-def sort_players(item):
-    player, games = item
-    return -len(games), player.lower()
-
-
 def plot(graph, data, player, output_dir, args):
     filename, func = graph
 
@@ -166,6 +162,26 @@ def plot_all(data, player, output_dir, args):
         plot(graph, data, player, output_dir, args)
 
 
+def generate_tasks(scores, args):
+    def sort_key(item):
+        player, games = item
+        return -len(games), player.lower()
+
+    for player, games in sorted(scores.items(), key=sort_key):
+        yield player, games, args
+
+
+def plot_player(x):
+    player, games, args = x
+    print(f"{player}: {len(games)} games")
+
+    output_dir = args.output / player
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    data = Data(games, args.xaxis)
+    plot_all(data, player, output_dir, args)
+
+
 def main(args):
     if not args.path.is_dir():
         print(f"Error: '{args.path}' is not a directory!")
@@ -188,14 +204,9 @@ def main(args):
     if len(scores) > 1:
         print(f"Plotting {len(scores)} players")
 
-    for player, games in sorted(scores.items(), key=sort_players):
-        print(f"{player}: {len(games)} games")
-
-        output_dir = args.output / player
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        data = Data(games, args.xaxis)
-        plot_all(data, player, output_dir, args)
+    with multiprocessing.Pool() as pool:
+        for _ in pool.imap(plot_player, generate_tasks(scores, args)):
+            pass
 
 
 if __name__ == "__main__":
