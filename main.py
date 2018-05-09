@@ -188,6 +188,9 @@ def main(args):
 
     scores = {k: v for k, v in scores.items() if len(v) >= 2}
 
+    if "player" in args:
+        scores = {k: v for k, v in scores.items() if k in args.player}
+
     if not scores:
         print("Could not find any players with at least 2 games.")
         return
@@ -213,6 +216,8 @@ if __name__ == "__main__":
                         help="Path to output folder")
     parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
                         help="X axis variable")
+    parser.add_argument("--player", action="append", default=argparse.SUPPRESS,
+                        help="Only plot the specified player")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
     parser.add_argument("--html", action="store_true",

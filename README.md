@@ -15,7 +15,8 @@ available online on https://ape3000.com/cogmindgraph/.
 
 ## Usage
 ```
-usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--dpi DPI] [--html]
+usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--player PLAYER]
+               [--dpi DPI] [--html]
                path output
 
 positional arguments:
@@ -26,6 +27,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --xaxis {time,turns,runs,date}
                         X axis variable (default: time)
+  --player PLAYER       Only plot the specified player
   --dpi DPI             Resolution for output files (default: 200)
   --html                Make HTML index files (default: False)
 ```
