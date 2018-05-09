@@ -89,7 +89,8 @@ def parse_game(path):
 
     return player, {
         "date": date,
-        "win": find(r"Win Type: (\d+)", -1),
+        "win": find(r"Win Type: (\d+)",
+                    0 if re.search(r"---\[ .*! \]---", game) else -1),
         "easy": find(r"Easy Mode: (\d+)", 0),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
         "time": find(r"Play Time: (\d+) min") / 60,
