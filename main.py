@@ -15,8 +15,10 @@ import graphs
 
 
 XAXES = {
-    "time": (lambda data: data["time_sum"], "cumulative playing time (h)"),
-    "turns": (lambda data: data.cumulative("turns"), "cumulative turns taken"),
+    "time": (lambda data: data.cumulative("time"),
+             "cumulative playing time (h)"),
+    "turns": (lambda data: data.cumulative("turns"),
+              "cumulative turns taken"),
     "runs": (lambda data: data.count(), "run count"),
     "date": (lambda data: data["date"], "date"),
 }
@@ -102,7 +104,6 @@ def parse_game(path):
         "easy": find(r"Easy Mode: (\d+)"),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
         "time": find(r"Play Time: (\d+) min") / 60,
-        "time_sum": find(r"Play Time:.*?Cumulative: (\d+) min") / 60,
         "turns": find(r"Turns Passed\s+(\d+)"),
         "lore": find(r"Lore%: (\d+)"),
         "gallery": find(r"Gallery%: (\d+)"),
