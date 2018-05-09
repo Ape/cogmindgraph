@@ -64,8 +64,12 @@ class Graphs:
     def completion(ax, data):
         x = data.xaxis()
         ax.plot(x, data["lore"], label="lore")
-        ax.plot(x, data["gallery"], label="gallery")
+
+        # Skip color #2 because we have used it to mean 'win'
+        next(ax._get_lines.prop_cycler)
+
         ax.plot(x, data["achievements"], label="achievements")
+        ax.plot(x, data["gallery"], label="gallery")
         ax.set_ylim(0, 100)
         ax.legend(loc="upper left", prop={"size": 8})
         ax.set_ylabel("completion percentage")
