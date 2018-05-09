@@ -152,7 +152,7 @@ def plot(graph, data, player, output_dir, args):
 
 
 def plot_all(data, player, output_dir, args):
-    for graph in graphs.graphs():
+    for graph in graphs.graphs.items():
         plot(graph, data, player, output_dir, args)
 
 

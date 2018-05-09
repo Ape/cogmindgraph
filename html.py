@@ -70,7 +70,7 @@ def write_player_index(player, output_dir):
                      href="../style.css")
         with tag("body"):
             with tag("div", klass="list"):
-                for graph, _ in graphs.graphs():
+                for graph in graphs.graphs.keys():
                     doc.stag("img", src=f"{graph}.png", alt=graph)
 
             with tag("p"):
