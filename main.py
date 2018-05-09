@@ -61,37 +61,26 @@ class Data:
 
 def parse_games(score_files):
     for path in score_files:
-        try:
-            player, game = parse_game(path)
-        except ParseError as e:
-            print(f"Warning: {e}")
-            continue
+        player, game = parse_game(path)
 
         if game["time"] > 0 and game["score"] > 750:
             yield player, game
 
 
-class ParseError(Exception):
-    pass
-
-
 def parse_game(path):
     def parse_filename(path):
         parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
-                          r"-\d+--?\d+[_\w+]*\.txt$", path.name)
+                          r"(?:-\d)?--?\d+[_\w+]*\.txt$", path.name)
         player = parts[1].replace("/", "").replace(".", "")
         date = np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()[1:]))
         return player, date
 
-    def find(pattern, default=None):
+    def find(pattern, default=np.nan):
         match = re.search(pattern, game, re.DOTALL)
         if match:
             return float(match[1])
 
-        if default is not None:
-            return default
-
-        raise ParseError(f"Can not find '{pattern}' in '{path.name}'")
+        return default
 
     with open(path) as game_file:
         game = game_file.read()
@@ -101,23 +90,23 @@ def parse_game(path):
     return player, {
         "date": date,
         "win": find(r"Win Type: (\d+)", -1),
-        "easy": find(r"Easy Mode: (\d+)"),
+        "easy": find(r"Easy Mode: (\d+)", 0),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
         "time": find(r"Play Time: (\d+) min") / 60,
         "turns": find(r"Turns Passed\s+(\d+)"),
         "lore": find(r"Lore%: (\d+)"),
         "gallery": find(r"Gallery%: (\d+)"),
-        "achievements": find(r"Achievement%: (\d+)", 0),
+        "achievements": find(r"Achievement%: (\d+)"),
         "speed": find(r"Average Speed \(%\)\s+(\d+)"),
         "regions": find(r"Regions Visited\s+(\d+)"),
         "prototypes": find(r"Prototype IDs \((\d+)\)"),
-        "parts": find(r"Peak State.*?\[Rating: (\d+)\]", 0),
+        "parts": find(r"Peak State.*?\[Rating: (\d+)\]"),
         "slots": find(r"Average Slot Usage \(%\)\s+(\d+)"),
         "damage": find(r"Damage Inflicted\s+(\d+)"),
         "melee": find(r"Damage Inflicted.*?Melee\s+(\d+)"),
         "em": find(r"Damage Inflicted.*?Electromagnetic\s+(\d+)"),
         "core": find(r"Average Core Remaining \(%\)\s+(\d+)"),
-        "hacking": find(r"Offensive Hacking\s+(\d+)", 0),
+        "hacking": find(r"Offensive Hacking\s+(\d+)"),
         "capacity": find(r"Average Capacity\s+(\d+)"),
         "influence": find(r"Average Influence\s+(\d+)"),
         "best_group": find(r"Highest-Rated Group\s+(\d+)"),
@@ -189,7 +178,7 @@ def main(args):
         print(f"Error: '{args.path}' is not a directory!")
         return
 
-    score_files = args.path.glob("*-*-*-*-*.txt")
+    score_files = args.path.glob("*-*-*-*.txt")
     score_files = (x for x in score_files if "_log" not in x.name)
 
     scores = collections.defaultdict(list)

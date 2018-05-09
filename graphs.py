@@ -47,7 +47,12 @@ def trendline(ax, x, y):
         x = matplotlib.dates.date2num(x)
 
     trend_locs = [0, ax.get_xticks()[-1]]
-    trend = np.poly1d(np.polyfit(x, y, 1))
+    valid = np.isfinite(y)
+
+    if np.count_nonzero(valid) < 2:
+        return
+
+    trend = np.poly1d(np.polyfit(x[valid], y[valid], 1))
     ax.autoscale(False)
     ax.plot(trend_locs, trend(trend_locs), "--", color="0.5", zorder=0)
 
