@@ -93,6 +93,7 @@ def parse_game(path):
                     0 if re.search(r"---\[ .*! \]---", game) else -1),
         "easy": find(r"Easy Mode: (\d+)", 0),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
+        "value": find(r"Value Destroyed \((\d+)\)"),
         "time": find(r"Play Time: (\d+) min") / 60,
         "turns": find(r"Turns Passed\s+(\d+)"),
         "lore": find(r"Lore%: (\d+)"),

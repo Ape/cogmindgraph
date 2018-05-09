@@ -109,6 +109,11 @@ class Graphs:
         ax.set_ylabel("score")
         ax.set_title("Score")
 
+    def value(ax, data):
+        scatter_plot(ax, data, data["value"])
+        ax.set_ylabel("value")
+        ax.set_title("Value destroyed")
+
     def time(ax, data):
         scatter_plot(ax, data, data["time"])
         ax.set_ylabel("game length (h)")
