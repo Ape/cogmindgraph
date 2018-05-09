@@ -19,6 +19,8 @@ XAXES = {
              "cumulative playing time (h)"),
     "turns": (lambda data: data.cumulative("turns"),
               "cumulative turns taken"),
+    "actions": (lambda data: data.cumulative("actions"),
+                "cumulative actions taken"),
     "runs": (lambda data: data.count(), "run count"),
     "date": (lambda data: data["date"], "date"),
 }
@@ -39,7 +41,9 @@ class Data:
         return self._to_array(self.select(*args, **kwargs))
 
     def cumulative(self, *args, **kwargs):
-        result = itertools.accumulate(self.select(*args, **kwargs))
+        values = self.select(*args, **kwargs)
+        values = (x if np.isfinite(x) else 0 for x in values)
+        result = itertools.accumulate(values)
         return self._to_array(result)
 
     def max(self, *args, **kwargs):
@@ -96,6 +100,7 @@ def parse_game(path):
         "value": find(r"Value Destroyed \((\d+)\)"),
         "time": find(r"Play Time: (\d+) min") / 60,
         "turns": find(r"Turns Passed\s+(\d+)"),
+        "actions": find(r"Actions Taken\s+(\d+)"),
         "lore": find(r"Lore%: (\d+)"),
         "gallery": find(r"Gallery%: (\d+)"),
         "achievements": find(r"Achievement%: (\d+)"),

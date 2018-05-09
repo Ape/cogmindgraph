@@ -124,9 +124,14 @@ class Graphs:
         ax.set_ylabel("turns")
         ax.set_title("Game length (turns taken)")
 
+    def actions(ax, data):
+        scatter_plot(ax, data, data["actions"])
+        ax.set_ylabel("actions")
+        ax.set_title("Game length (actions taken)")
+
     def tempo(ax, data):
-        scatter_plot(ax, data, data["turns"] / (60 * data["time"]))
-        ax.set_ylabel("turns per minute")
+        scatter_plot(ax, data, data["actions"] / (60 * data["time"]))
+        ax.set_ylabel("actions per minute")
         ax.set_title("Playing tempo")
 
     def speed(ax, data):
