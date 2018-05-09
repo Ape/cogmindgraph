@@ -1,3 +1,4 @@
+import inspect
 import math
 
 import matplotlib.dates
@@ -53,6 +54,10 @@ def trendline(ax, x, y):
 
 def divide_safe(a, b):
     return np.divide(a, b, out=np.zeros(a.shape), where=b != 0)
+
+
+def graphs():
+    return inspect.getmembers(Graphs, predicate=inspect.isfunction)
 
 
 class Graphs:

@@ -2,7 +2,6 @@
 
 import argparse
 import collections
-import inspect
 import itertools
 import multiprocessing
 import pathlib
@@ -156,18 +155,8 @@ def plot(graph, data, player, output_dir, args):
 
 
 def plot_all(data, player, output_dir, args):
-    for graph in inspect.getmembers(graphs.Graphs,
-                                    predicate=inspect.isfunction):
+    for graph in graphs.graphs():
         plot(graph, data, player, output_dir, args)
-
-
-def generate_tasks(scores, args):
-    def sort_key(item):
-        player, games = item
-        return -len(games), player.lower()
-
-    for player, games in sorted(scores.items(), key=sort_key):
-        yield player, games, args
 
 
 def plot_player(x):
@@ -179,6 +168,19 @@ def plot_player(x):
 
     data = Data(games, args.xaxis)
     plot_all(data, player, output_dir, args)
+
+    if args.html:
+        import html
+        html.write_player_index(player, output_dir)
+
+
+def generate_tasks(scores, args):
+    def sort_key(item):
+        player, games = item
+        return -len(games), player.lower()
+
+    for player, games in sorted(scores.items(), key=sort_key):
+        yield player, games, args
 
 
 def main(args):
@@ -203,6 +205,10 @@ def main(args):
     if len(scores) > 1:
         print(f"Plotting {len(scores)} players")
 
+    if args.html:
+        import html
+        html.write_index(scores, args.output)
+
     with multiprocessing.Pool() as pool:
         for _ in pool.imap(plot_player, generate_tasks(scores, args)):
             pass
@@ -219,4 +225,6 @@ if __name__ == "__main__":
                         help="X axis variable")
     parser.add_argument("--dpi", type=float, default=200,
                         help="Resolution for output files")
+    parser.add_argument("--html", action="store_true",
+                        help="Make HTML index files")
     main(parser.parse_args())

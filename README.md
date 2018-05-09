@@ -9,10 +9,13 @@
 * Python 3
 * Numpy
 * Matplotlib
+* Yattag (optional)
+  * Required for `--html` option
 
 ## Usage
 ```
-usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--dpi DPI] path output
+usage: main.py [-h] [--xaxis {time,turns,runs,date}] [--dpi DPI] [--html]
+               path output
 
 positional arguments:
   path                  Path to Cogmind scores folder
@@ -23,6 +26,7 @@ optional arguments:
   --xaxis {time,turns,runs,date}
                         X axis variable (default: time)
   --dpi DPI             Resolution for output files (default: 200)
+  --html                Make HTML index files (default: False)
 ```
 
 For example:
