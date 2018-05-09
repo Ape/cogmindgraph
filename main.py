@@ -5,7 +5,6 @@ import collections
 import inspect
 import itertools
 import multiprocessing
-import os
 import pathlib
 import re
 
