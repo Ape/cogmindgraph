@@ -13,7 +13,8 @@ def graph(func):
     return func
 
 
-def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
+def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left",
+                 mark_versions=True):
     x = data.xaxis()
     win = data["win"] >= 0
     normal = data["easy"] == 0
@@ -43,15 +44,17 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left"):
             ax.annotate(int(win_type), (x[i], y[i]), size=6, weight="bold",
                         xytext=(-2, -2.25), textcoords="offset points")
 
-    trendline(ax, x, y)
+    trendline(ax, data, y)
+
+    if mark_versions:
+        version_markers(ax, data)
 
     if win.any() or easy.any() or easiest.any():
         ax.legend(loc=legend_loc, prop={"size": 8})
 
 
-def trendline(ax, x, y):
-    if np.issubdtype(x.dtype, np.datetime64):
-        x = matplotlib.dates.date2num(x)
+def trendline(ax, data, y):
+    x = ordinal(data.xaxis())
 
     trend_locs = [0, ax.get_xticks()[-1]]
     valid = np.isfinite(y)
@@ -64,8 +67,33 @@ def trendline(ax, x, y):
     ax.plot(trend_locs, trend(trend_locs), "--", color="0.5", zorder=0)
 
 
+def version_markers(ax, data):
+    def label(version, position, xycoords="data"):
+        ax.annotate(version.lower(), position, xycoords=xycoords,
+                    xytext=(-0.5, -4.5), textcoords="offset points",
+                    size=5, rotation=-90, zorder=0)
+
+    def changed_values(y):
+        return np.where(y[:-1] != y[1:])[0] + 1
+
+    x = ordinal(data.xaxis())
+    y = data["version"]
+    label(y[0], (0, 1), xycoords="axes fraction")
+
+    for i in changed_values(y):
+        ax.axvline(x[i], linewidth=0.5, color="0.5", zorder=0)
+        label(y[i], (x[i], ax.get_yticks()[-1]))
+
+
 def divide_safe(a, b):
     return np.divide(a, b, out=np.zeros(a.shape), where=b != 0)
+
+
+def ordinal(x):
+    if np.issubdtype(x.dtype, np.datetime64):
+        x = matplotlib.dates.date2num(x)
+
+    return x
 
 
 @graph
@@ -82,6 +110,7 @@ def completion(ax, data):
     ax.legend(loc="upper left", prop={"size": 8})
     ax.set_ylabel("completion percentage")
     ax.set_title("Completion")
+    version_markers(ax, data)
 
 
 @graph
@@ -105,6 +134,7 @@ def high_score(ax, data):
     ax.set_ylim(ymin=0)
     ax.set_ylabel("score")
     ax.set_title("High score")
+    version_markers(ax, data)
 
     if easy(data).any() or easiest(data).any():
         ax.legend(loc="upper left", prop={"size": 8})
@@ -182,8 +212,8 @@ def parts(ax, data):
 
 @graph
 def slots(ax, data):
-    scatter_plot(ax, data, data["slots"], legend_loc="lower left")
     ax.set_ylim(ymax=100)
+    scatter_plot(ax, data, data["slots"], legend_loc="lower left")
     ax.set_ylabel("average slot usage (%)")
     ax.set_title("Slot usage")
 
@@ -198,8 +228,8 @@ def damage(ax, data):
 @graph
 def melee(ax, data):
     y = 100 * divide_safe(data["melee"], data["damage"])
-    scatter_plot(ax, data, y)
     ax.set_ylim(ymax=100)
+    scatter_plot(ax, data, y)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     ax.set_ylabel("melee damage")
     ax.set_title("Melee")
@@ -208,8 +238,8 @@ def melee(ax, data):
 @graph
 def em(ax, data):
     y = 100 * divide_safe(data["em"], data["damage"])
-    scatter_plot(ax, data, y)
     ax.set_ylim(ymax=100)
+    scatter_plot(ax, data, y)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     ax.set_ylabel("EM damage")
     ax.set_title("Electromagnetic damage")
@@ -217,8 +247,8 @@ def em(ax, data):
 
 @graph
 def core(ax, data):
-    scatter_plot(ax, data, data["core"], legend_loc="lower left")
     ax.set_ylim(ymax=100)
+    scatter_plot(ax, data, data["core"], legend_loc="lower left")
     ax.set_ylabel("average core remaining (%)")
     ax.set_title("Core integrity")
 
@@ -247,13 +277,14 @@ def influence(ax, data):
 
     y = data["influence"]
     y = np.log2(y.clip(2**cutoff))
-    scatter_plot(ax, data, y, ymin=None)
+    scatter_plot(ax, data, y, ymin=None, mark_versions=False)
     ax.set_ylabel("average influence")
     ax.set_title("Influence")
 
     tick_start = math.floor(min(y) - tick)
     tick_stop = math.ceil(max(y) - tick) + 1
     ax.set_yticks([tick + x for x in range(tick_start, tick_stop)])
+    version_markers(ax, data)
 
     if min(y) <= cutoff:
         ax.set_ylim(ymin=cutoff)

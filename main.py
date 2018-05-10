@@ -93,10 +93,10 @@ def parse_game(path):
 
         return player, date
 
-    def find(pattern, default=np.nan):
+    def find(pattern, default=np.nan, type=float):
         match = re.search(pattern, game, re.DOTALL)
         if match:
-            return float(match[1])
+            return type(match[1])
 
         return default
 
@@ -107,6 +107,7 @@ def parse_game(path):
 
     return player, {
         "date": date,
+        "version": find(r"Cogmind - (\w+ \d+)", type=str),
         "win": find(r"Win Type: (\d+)",
                     0 if re.search(r"---\[ .*! \]---", game) else -1),
         "easy": find(r"Easy Mode: (\d+)", 0),
