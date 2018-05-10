@@ -136,13 +136,19 @@ def parse_game(path, args):
 
 
 def plot(graph, data, player, output_dir, args):
+    def smart_format(value, pos, base=matplotlib.ticker.EngFormatter(sep="")):
+        if 0 < value < 1:
+            return f"{value:g}"
+
+        return base(value)
+
     filename, func = graph
 
     fig, ax = plt.subplots()
     fig.suptitle(f"{player}'s Cogmind progression", fontsize=8)
     ax.set_xlabel(data.xlabel())
 
-    formatter = matplotlib.ticker.EngFormatter(sep="")
+    formatter = matplotlib.ticker.FuncFormatter(smart_format)
     ax.yaxis.set_major_formatter(formatter)
 
     if np.issubdtype(data.xaxis().dtype, np.datetime64):
