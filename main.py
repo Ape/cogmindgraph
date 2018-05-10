@@ -192,6 +192,22 @@ def plot_player(x):
         html.write_player_index(player, output_dir)
 
 
+def merge_aliases(scores):
+    Alias = collections.namedtuple("Alias", "name games")
+
+    def best_name(aliases):
+        return max(aliases, key=lambda x: len(x.games)).name
+
+    def merge_games(aliases):
+        return sum((x.games for x in aliases), [])
+
+    players = collections.defaultdict(list)
+    for player, games in scores.items():
+        players[player.lower()].append(Alias(player, games))
+
+    return {best_name(x): merge_games(x) for x in players.values()}
+
+
 def generate_tasks(scores, args):
     def sort_key(item):
         player, games = item
@@ -214,6 +230,7 @@ def main(args):
     for player, game in parse_games(score_files, args):
         scores[player].append(game)
 
+    scores = merge_aliases(scores)
     scores = {k: v for k, v in scores.items() if len(v) >= 2}
 
     if not scores:
