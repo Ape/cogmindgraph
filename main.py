@@ -63,36 +63,20 @@ class Data:
         return np.array(list(generator))
 
 
-def parse_games(score_files):
+def parse_games(score_files, args):
     for path in score_files:
-        try:
-            player, game = parse_game(path)
-        except ParseError as e:
-            print(f"Warning: {e}")
+        result = parse_game(path, args)
+
+        if not result:
             continue
+
+        player, game = result
 
         if game["time"] > 0 and game["score"] > 750:
             yield player, game
 
 
-class ParseError(Exception):
-    pass
-
-
-def parse_game(path):
-    def parse_filename(path):
-        parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
-                          r"(?:-\d)?--?\d+[_\w+]*\.txt$", path.name)
-        player = parts[1].replace("/", "").replace(".", "")
-
-        try:
-            date = np.datetime64("20{}-{}-{}T{}:{}:{}"
-                                 .format(*parts.groups()[1:]))
-        except ValueError as e:
-            raise ParseError(f"{path.name}: {e}")
-
-        return player, date
-
+def parse_fields(game, date):
     def find(pattern, default=np.nan, type=float):
         match = re.search(pattern, game, re.DOTALL)
         if match:
@@ -100,12 +84,7 @@ def parse_game(path):
 
         return default
 
-    with open(path) as game_file:
-        game = game_file.read()
-
-    player, date = parse_filename(path)
-
-    return player, {
+    return {
         "date": date,
         "version": find(r"Cogmind - (\w+ \d+)", type=str),
         "win": find(r"Win Type: (\d+)",
@@ -133,6 +112,27 @@ def parse_game(path):
         "influence": find(r"Average Influence\s+(\d+)"),
         "best_group": find(r"Highest-Rated Group\s+(\d+)"),
     }
+
+
+def parse_game(path, args):
+    parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
+                      r"(?:-\d)?--?\d+[_\w+]*\.txt$", path.name)
+    player = parts[1].replace("/", "").replace(".", "")
+
+    if "player" in args and player not in args.player:
+        return
+
+    try:
+        date = np.datetime64("20{}-{}-{}T{}:{}:{}"
+                             .format(*parts.groups()[1:]))
+    except ValueError as e:
+        print(f"Warning: {path.name}: {e}")
+        return
+
+    with open(path) as game_file:
+        game = game_file.read()
+
+    return player, parse_fields(game, date)
 
 
 def plot(graph, data, player, output_dir, args):
@@ -205,13 +205,10 @@ def main(args):
 
     scores = collections.defaultdict(list)
 
-    for player, game in parse_games(score_files):
+    for player, game in parse_games(score_files, args):
         scores[player].append(game)
 
     scores = {k: v for k, v in scores.items() if len(v) >= 2}
-
-    if "player" in args:
-        scores = {k: v for k, v in scores.items() if k in args.player}
 
     if not scores:
         print("Could not find any players with at least 2 games.")
