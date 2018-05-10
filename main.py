@@ -65,10 +65,18 @@ class Data:
 
 def parse_games(score_files):
     for path in score_files:
-        player, game = parse_game(path)
+        try:
+            player, game = parse_game(path)
+        except ParseError as e:
+            print(f"Warning: {e}")
+            continue
 
         if game["time"] > 0 and game["score"] > 750:
             yield player, game
+
+
+class ParseError(Exception):
+    pass
 
 
 def parse_game(path):
@@ -76,7 +84,13 @@ def parse_game(path):
         parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
                           r"(?:-\d)?--?\d+[_\w+]*\.txt$", path.name)
         player = parts[1].replace("/", "").replace(".", "")
-        date = np.datetime64("20{}-{}-{}T{}:{}:{}".format(*parts.groups()[1:]))
+
+        try:
+            date = np.datetime64("20{}-{}-{}T{}:{}:{}"
+                                 .format(*parts.groups()[1:]))
+        except ValueError as e:
+            raise ParseError(f"{path.name}: {e}")
+
         return player, date
 
     def find(pattern, default=np.nan):
