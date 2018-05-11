@@ -13,8 +13,7 @@ def graph(func):
     return func
 
 
-def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left",
-                 mark_versions=True):
+def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     x = data.xaxis()
     win = data["win"] >= 0
     normal = data["easy"] == 0
@@ -57,7 +56,13 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left",
         version_markers(ax, data)
 
     if win.any() or easy.any() or easiest.any():
-        ax.legend(loc=legend_loc, prop={"size": 8})
+        legend(ax)
+
+
+def legend(ax):
+    ax.legend(loc="upper right", bbox_to_anchor=(1, 1),
+              bbox_transform=ax.get_figure().transFigure,
+              borderaxespad=0.1, prop={"size": 8})
 
 
 def trendline(ax, data, y):
@@ -114,7 +119,7 @@ def completion(ax, data):
     ax.plot(x, data["achievements"], label="achievements")
     ax.plot(x, data["gallery"], label="gallery")
     ax.set_ylim(0, 100)
-    ax.legend(loc="upper left", prop={"size": 8})
+    legend(ax)
     ax.set_ylabel("completion percentage")
     ax.set_title("Completion")
     version_markers(ax, data)
@@ -144,7 +149,7 @@ def high_score(ax, data):
     version_markers(ax, data)
 
     if easy(data).any() or easiest(data).any():
-        ax.legend(loc="upper left", prop={"size": 8})
+        legend(ax)
 
 
 @graph
@@ -220,7 +225,7 @@ def parts(ax, data):
 @graph
 def slots(ax, data):
     ax.set_ylim(ymax=100)
-    scatter_plot(ax, data, data["slots"], legend_loc="lower left")
+    scatter_plot(ax, data, data["slots"])
     ax.set_ylabel("average slot usage (%)")
     ax.set_title("Slot usage")
 
@@ -255,7 +260,7 @@ def em(ax, data):
 @graph
 def core(ax, data):
     ax.set_ylim(ymax=100)
-    scatter_plot(ax, data, data["core"], legend_loc="lower left")
+    scatter_plot(ax, data, data["core"])
     ax.set_ylabel("average core remaining (%)")
     ax.set_title("Core integrity")
 
