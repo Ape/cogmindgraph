@@ -76,7 +76,7 @@ def parse_games(score_files, args):
             yield player, game
 
 
-def parse_fields(game, date):
+def parse_fields(game, date, extended):
     def find(pattern, default=np.nan, type=float):
         match = re.search(pattern, game, re.DOTALL)
         if match:
@@ -86,6 +86,7 @@ def parse_fields(game, date):
 
     return {
         "date": date,
+        "extended": extended,
         "version": find(r"Cogmind - (\w+ \d+)", type=str),
         "win": find(r"Win Type: (\d+)",
                     0 if re.search(r"---\[ .*! \]---", game) else -1),
@@ -116,15 +117,16 @@ def parse_fields(game, date):
 
 def parse_game(path, args):
     parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
-                      r"(?:-\d)?--?\d+[_\w+]*\.txt$", path.name)
+                      r"(?:-\d)?--?\d+(?:_w\d*)?(\++)?\.txt$", path.name)
     player = parts[1].replace("/", "").replace(".", "")
+    extended = parts[8]
 
     if "player" in args and player not in args.player:
         return
 
     try:
         date = np.datetime64("20{}-{}-{}T{}:{}:{}"
-                             .format(*parts.groups()[1:]))
+                             .format(*parts.groups()[1:7]))
     except ValueError as e:
         print(f"Warning: {path.name}: {e}")
         return
@@ -132,7 +134,7 @@ def parse_game(path, args):
     with open(path) as game_file:
         game = game_file.read()
 
-    return player, parse_fields(game, date)
+    return player, parse_fields(game, date, extended)
 
 
 def plot(graph, data, player, output_dir, args):

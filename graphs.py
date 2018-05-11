@@ -21,6 +21,13 @@ def scatter_plot(ax, data, y, ymin=0, legend_loc="upper left",
     easy = data["easy"] == 1
     easiest = data["easy"] == 2
 
+    extended = np.nonzero(data["extended"])
+    extended2 = data["extended"] == "++"
+    ax.scatter(x[extended], y[extended], s=80, color="k", facecolors="none",
+               linewidths=0.5)
+    ax.scatter(x[extended2], y[extended2], s=120, color="k", facecolors="none",
+               linewidths=0.5)
+
     ax.scatter(x[~win & normal], y[~win & normal], color="C0")
 
     if win.any():
