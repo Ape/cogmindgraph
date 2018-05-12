@@ -14,18 +14,22 @@ def graph(func):
 
 
 def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
+    def mark_ending(text, position):
+        ax.annotate(text, position, size=6, weight="bold",
+                    xytext=(-2, -2.25), textcoords="offset points")
+
+    def mark_extended(x, y, mask, size=80):
+        ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
+                   linewidths=0.5)
+
     x = data.xaxis()
     win = data["win"] >= 0
     normal = data["easy"] == 0
     easy = data["easy"] == 1
     easiest = data["easy"] == 2
 
-    extended = np.nonzero(data["extended"])
-    extended2 = data["extended"] == "++"
-    ax.scatter(x[extended], y[extended], s=80, color="k", facecolors="none",
-               linewidths=0.5)
-    ax.scatter(x[extended2], y[extended2], s=120, color="k", facecolors="none",
-               linewidths=0.5)
+    mark_extended(x, y, np.nonzero(data["extended"]))
+    mark_extended(x, y, data["extended"] == "++", size=130)
 
     ax.scatter(x[~win & normal], y[~win & normal], color="C0")
 
@@ -47,8 +51,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
 
     for i, win_type in enumerate(data["win"]):
         if win_type > 0:
-            ax.annotate(int(win_type), (x[i], y[i]), size=6, weight="bold",
-                        xytext=(-2, -2.25), textcoords="offset points")
+            mark_ending(int(win_type), (x[i], y[i]))
 
     trendline(ax, data, y)
 
