@@ -119,8 +119,9 @@ def completion(ax, data):
     ax.plot(x, data["achievements"], label="achievements")
     ax.plot(x, data["gallery"], label="gallery")
     ax.set_ylim(0, 100)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     legend(ax)
-    ax.set_ylabel("completion percentage")
+    ax.set_ylabel("completion")
     ax.set_title("Completion")
     version_markers(ax, data)
 
@@ -197,7 +198,8 @@ def tempo(ax, data):
 @graph
 def speed(ax, data):
     scatter_plot(ax, data, data["speed"])
-    ax.set_ylabel("average speed (%)")
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax.set_ylabel("average speed")
     ax.set_title("Movement speed")
 
 
@@ -225,8 +227,9 @@ def parts(ax, data):
 @graph
 def slots(ax, data):
     ax.set_ylim(ymax=100)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     scatter_plot(ax, data, data["slots"])
-    ax.set_ylabel("average slot usage (%)")
+    ax.set_ylabel("average slot usage")
     ax.set_title("Slot usage")
 
 
@@ -241,8 +244,8 @@ def damage(ax, data):
 def melee(ax, data):
     y = 100 * divide_safe(data["melee"], data["damage"])
     ax.set_ylim(ymax=100)
-    scatter_plot(ax, data, y)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    scatter_plot(ax, data, y)
     ax.set_ylabel("melee damage")
     ax.set_title("Melee")
 
@@ -251,8 +254,8 @@ def melee(ax, data):
 def em(ax, data):
     y = 100 * divide_safe(data["em"], data["damage"])
     ax.set_ylim(ymax=100)
-    scatter_plot(ax, data, y)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    scatter_plot(ax, data, y)
     ax.set_ylabel("EM damage")
     ax.set_title("Electromagnetic damage")
 
@@ -260,8 +263,9 @@ def em(ax, data):
 @graph
 def core(ax, data):
     ax.set_ylim(ymax=100)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     scatter_plot(ax, data, data["core"])
-    ax.set_ylabel("average core remaining (%)")
+    ax.set_ylabel("average core remaining")
     ax.set_title("Core integrity")
 
 
