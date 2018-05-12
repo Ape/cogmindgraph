@@ -33,7 +33,7 @@ def write_index(scores, output_dir):
     doc, tag, text = yattag.Doc().tagtext()
     doc.asis("<!DOCTYPE html>")
 
-    with tag("html"):
+    with tag("html", lang="en"):
         with tag("head"):
             with tag("title"):
                 text("Cogmind progression graphs")
@@ -62,7 +62,7 @@ def write_player_index(player, output_dir):
     doc, tag, text = yattag.Doc().tagtext()
     doc.asis("<!DOCTYPE html>")
 
-    with tag("html"):
+    with tag("html", lang="en"):
         with tag("head"):
             with tag("title"):
                 text(f"{player}'s Cogmind progression")
