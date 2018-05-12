@@ -28,31 +28,30 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     easy = data["easy"] == 1
     easiest = data["easy"] == 2
 
-    mark_extended(x, y, np.nonzero(data["extended"]))
-    mark_extended(x, y, data["extended"] == "++", size=130)
-
-    ax.scatter(x[~win & normal], y[~win & normal], color="C0")
-
-    if win.any():
-        ax.scatter(x[win & normal], y[win & normal], color="C1", label="win")
-
-    if easy.any():
-        ax.scatter(x[~win & easy], y[~win & easy], color="C0",
-                   facecolors="none", label="easy")
-        ax.scatter(x[win & easy], y[win & easy], color="C1", facecolors="w")
-
     if easiest.any():
         ax.scatter(x[~win & easiest], y[~win & easiest], color="C0",
                    facecolors="none", linestyle=":", label="easiest")
         ax.scatter(x[win & easiest], y[win & easiest], color="C1",
                    facecolors="w", linestyle=":")
 
-    ax.set_ylim(ymin=ymin)
+    if easy.any():
+        ax.scatter(x[~win & easy], y[~win & easy], color="C0",
+                   facecolors="none", label="easy")
+        ax.scatter(x[win & easy], y[win & easy], color="C1", facecolors="w")
+
+    ax.scatter(x[~win & normal], y[~win & normal], color="C0")
+
+    if win.any():
+        ax.scatter(x[win & normal], y[win & normal], color="C1", label="win")
+
+    mark_extended(x, y, np.nonzero(data["extended"]))
+    mark_extended(x, y, data["extended"] == "++", size=130)
 
     for i, win_type in enumerate(data["win"]):
         if win_type > 0:
             mark_ending(int(win_type), (x[i], y[i]))
 
+    ax.set_ylim(ymin=ymin)
     trendline(ax, data, y)
 
     if mark_versions:
@@ -141,12 +140,12 @@ def high_score(ax, data):
         return item["easy"] == 2
 
     x = data.xaxis()
-    ax.plot(x[normal(data)], data.max("score", where=normal),
-            label="normal")
-    ax.plot(x[easy(data)], data.max("score", where=easy), color="C0",
-            linestyle="--", label="easy")
     ax.plot(x[easiest(data)], data.max("score", where=easiest), color="C0",
             linestyle=":", label="easiest")
+    ax.plot(x[easy(data)], data.max("score", where=easy), color="C0",
+            linestyle="--", label="easy")
+    ax.plot(x[normal(data)], data.max("score", where=normal), color="C0",
+            label="normal")
     ax.set_ylim(ymin=0)
     ax.set_ylabel("score")
     ax.set_title("High score")
