@@ -6,6 +6,7 @@ import itertools
 import multiprocessing
 import pathlib
 import re
+import subprocess
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -170,8 +171,17 @@ def plot(graph, data, player, output_dir, args):
 
     ax.set_ylim(ymax=ax.get_yticks()[-1])
 
-    plt.savefig((output_dir / filename).with_suffix(".png"), dpi=args.dpi)
+    basename = output_dir / filename
+    plt.savefig(basename.with_suffix(".svg"))
     plt.close(fig)
+
+    if args.format != "svg":
+        subprocess.run([
+            "rsvg-convert", basename.with_suffix(".svg"),
+            "-w", str(args.size),
+            "-f", args.format,
+            "-o", basename.with_suffix(f".{args.format}"),
+        ]).check_returncode()
 
 
 def plot_all(data, player, output_dir, args):
@@ -191,7 +201,7 @@ def plot_player(x):
 
     if args.html:
         import html
-        html.write_player_index(player, output_dir)
+        html.write_player_index(player, output_dir, args.format)
 
 
 def merge_aliases(scores):
@@ -244,7 +254,7 @@ def main(args):
 
     if args.html:
         import html
-        html.write_index(scores, args.output)
+        html.write_index(scores, args.output, args.size)
 
     with multiprocessing.Pool() as pool:
         for _ in pool.imap(plot_player, generate_tasks(scores, args)):
@@ -252,6 +262,8 @@ def main(args):
 
 
 if __name__ == "__main__":
+    plt.switch_backend("svg")
+
     parser = argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("path", type=pathlib.Path,
@@ -262,8 +274,10 @@ if __name__ == "__main__":
                         help="X axis variable")
     parser.add_argument("--player", action="append", default=argparse.SUPPRESS,
                         help="Only plot the specified player")
-    parser.add_argument("--dpi", type=float, default=200,
-                        help="Resolution for output files")
+    parser.add_argument("--format", choices=["svg", "png"], default="svg",
+                        help="Output image format")
+    parser.add_argument("--size", type=int, default="1280",
+                        help="Output image width")
     parser.add_argument("--html", action="store_true",
                         help="Make HTML index files")
     main(parser.parse_args())

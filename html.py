@@ -23,7 +23,7 @@ def build_css(rulesets):
     return "\n".join(build_ruleset(*x) for x in rulesets.items())
 
 
-def write_index(scores, output_dir):
+def write_index(scores, output_dir, size):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with open(output_dir / "style.css", "w") as style:
@@ -40,6 +40,9 @@ def write_index(scores, output_dir):
                 "margin": "0.5em",
                 "max-width": "95vw",
                 "max-height": "95vh",
+            },
+            ".format-svg img": {
+                "width": f"{size}px",
             },
         }))
 
@@ -71,7 +74,7 @@ def write_index(scores, output_dir):
         index.write(yattag.indent(doc.getvalue()))
 
 
-def write_player_index(player, output_dir):
+def write_player_index(player, output_dir, image_format):
     doc, tag, text = yattag.Doc().tagtext()
     doc.asis("<!DOCTYPE html>")
 
@@ -82,9 +85,9 @@ def write_player_index(player, output_dir):
             doc.stag("link", rel="stylesheet", type="text/css",
                      href="../style.css")
         with tag("body"):
-            with tag("div", klass="list"):
+            with tag("div", klass=f"list format-{image_format}"):
                 for graph in graphs.graphs.keys():
-                    doc.stag("img", src=f"{graph}.png", alt=graph)
+                    doc.stag("img", src=f"{graph}.{image_format}", alt=graph)
 
             with tag("p"):
                 text(f"Last updated: {timestamp()}")

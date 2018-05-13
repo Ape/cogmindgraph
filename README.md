@@ -12,11 +12,13 @@ available online on https://ape3000.com/cogmindgraph/.
 * Matplotlib
 * Yattag (optional)
   * Required for `--html` option
+* rsvg-convert (optional)
+  * Required for `--format png` option
 
 ## Usage
 ```
 usage: main.py [-h] [--xaxis {time,turns,actions,runs,date}] [--player PLAYER]
-               [--dpi DPI] [--html]
+               [--format {svg,png}] [--size SIZE] [--html]
                path output
 
 positional arguments:
@@ -28,7 +30,8 @@ optional arguments:
   --xaxis {time,turns,actions,runs,date}
                         X axis variable (default: time)
   --player PLAYER       Only plot the specified player
-  --dpi DPI             Resolution for output files (default: 200)
+  --format {svg,png}    Output image format (default: svg)
+  --size SIZE           Output image width (default: 1280)
   --html                Make HTML index files (default: False)
 ```
 
