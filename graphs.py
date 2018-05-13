@@ -24,7 +24,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
                    linewidths=0.5)
 
     x = data.xaxis()
-    win = data["win"] >= 0
+    win = data["win"] == 1
     normal = data["easy"] == 0
     easy = data["easy"] == 1
     easiest = data["easy"] == 2
@@ -48,9 +48,9 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     mark_extended(x, y, np.nonzero(data["extended"]))
     mark_extended(x, y, data["extended"] == "++", size=130)
 
-    for i, win_type in enumerate(data["win"]):
-        if win_type > 0:
-            mark_ending(int(win_type), (x[i], y[i]))
+    for i, ending in enumerate(data["ending"]):
+        if ending:
+            mark_ending(ending, (x[i], y[i]))
 
     ax.set_ylim(ymin=ymin)
     trendline(ax, data, y)

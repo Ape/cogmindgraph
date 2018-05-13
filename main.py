@@ -26,6 +26,12 @@ XAXES = {
     "date": (lambda data: data["date"], "date"),
 }
 
+LOSS_ENDINGS = {
+    "CORE DESTROYED": "",
+    "SYSTEM CORRUPTED": "C",
+    "CRUSHED BY SINGULARITY!": "!",
+}
+
 
 class Data:
     def __init__(self, items, xaxis):
@@ -85,12 +91,29 @@ def parse_fields(game, date, extended):
 
         return default
 
+    def parse_ending():
+        ending = find(r"---\[ (.*) \]---", type=str)
+
+        if ending == "SELF-DESTRUCTED":
+            return -1, ""
+
+        if ending in LOSS_ENDINGS:
+            return 0, LOSS_ENDINGS[ending]
+
+        win_type = find(r"Win Type: (\d+)", type=int)
+        if win_type > 0:
+            return 1, str(win_type)
+
+        return 1, ""
+
+    win, ending = parse_ending()
+
     return {
         "date": date,
         "extended": extended,
+        "win": win,
+        "ending": ending,
         "version": find(r"Cogmind - (\w+ \d+)", type=str),
-        "win": find(r"Win Type: (\d+)",
-                    0 if re.search(r"---\[ .*! \]---", game) else -1),
         "easy": find(r"Easy Mode: (\d+)", 0),
         "score": find(r"\s+TOTAL SCORE: (-?\d+)"),
         "value": find(r"Value Destroyed \((\d+)\)"),
