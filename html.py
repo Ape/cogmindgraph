@@ -10,25 +10,37 @@ def timestamp():
     return f"{now:%Y-%m-%d %H:%M %Z}"
 
 
+def build_css(rulesets):
+    def build_ruleset(selector, declarations):
+        ruleset = f"{selector} {{\n"
+
+        for prop, value in declarations.items():
+            ruleset += f"  {prop}: {value};\n"
+
+        ruleset += "}\n"
+        return ruleset
+
+    return "\n".join(build_ruleset(*x) for x in rulesets.items())
+
+
 def write_index(scores, output_dir):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     with open(output_dir / "style.css", "w") as style:
-        style.write("""
-            body {
-                background: #eee;
-            }
-
-            .list {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .list img {
-                margin: 0.5em;
-                max-width: 95vw;
-            }""")
+        style.write(build_css({
+            "body": {
+                "background": "#eee",
+            },
+            ".list": {
+                "display": "flex",
+                "flex-direction": "column",
+                "align-items": "center",
+            },
+            ".list img": {
+                "margin": "0.5em",
+                "max-width": "95vw",
+            },
+        }))
 
     doc, tag, text = yattag.Doc().tagtext()
     doc.asis("<!DOCTYPE html>")
