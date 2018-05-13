@@ -16,7 +16,8 @@ def graph(func):
 def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     def mark_ending(text, position):
         ax.annotate(text, position, size=6, weight="bold",
-                    xytext=(-2, -2.25), textcoords="offset points")
+                    xytext=(0, -2), textcoords="offset points",
+                    horizontalalignment="center")
 
     def mark_extended(x, y, mask, size=80):
         ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
