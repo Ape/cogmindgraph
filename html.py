@@ -39,6 +39,7 @@ def write_index(scores, output_dir):
             ".list img": {
                 "margin": "0.5em",
                 "max-width": "95vw",
+                "max-height": "95vh",
             },
         }))
 
