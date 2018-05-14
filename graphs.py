@@ -299,12 +299,12 @@ def hacking(ax, data):
 
 @graph
 def capacity(ax, data):
-    scatter_plot(ax, data, data["capacity"])
-    ax.set_ylabel("average capacity")
-    ax.set_title("Inventory capacity")
     locator = matplotlib.ticker.MaxNLocator(integer=True,
                                             steps=[1, 2, 5, 10])
     ax.yaxis.set_major_locator(locator)
+    scatter_plot(ax, data, data["capacity"])
+    ax.set_ylabel("average capacity")
+    ax.set_title("Inventory capacity")
 
 
 @graph
