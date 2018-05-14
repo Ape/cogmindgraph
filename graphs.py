@@ -23,7 +23,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     def mark_extended(x, y, mask, size=80):
         if mask.any():
             ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
-                       linewidths=0.5)
+                       linewidths=0.5, clip_on=False)
 
     def plot(ax, x, y, easy, win):
         def facecolors(color):
@@ -57,7 +57,8 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
 
         if mask.any():
             ax.scatter(x[mask], y[mask], label=label, color=color,
-                       facecolors=facecolors(color), linestyle=linestyle())
+                       facecolors=facecolors(color), linestyle=linestyle(),
+                       clip_on=False)
 
     x = data.xaxis()
 
