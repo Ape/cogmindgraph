@@ -6,7 +6,6 @@ import itertools
 import multiprocessing
 import pathlib
 import re
-import subprocess
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -198,13 +197,12 @@ def plot(graph, data, player, output_dir, args):
     plt.savefig(basename.with_suffix(".svg"))
     plt.close(fig)
 
-    if args.format != "svg":
-        subprocess.run([
-            "rsvg-convert", basename.with_suffix(".svg"),
-            "-w", str(args.size),
-            "-f", args.format,
-            "-o", basename.with_suffix(f".{args.format}"),
-        ]).check_returncode()
+    if args.format == "png":
+        dpi = args.size / fig.get_size_inches()[0]
+
+        import cairosvg
+        cairosvg.svg2png(url=str(basename.with_suffix(".svg")), dpi=dpi,
+                         write_to=str(basename.with_suffix(".png")))
 
 
 def plot_all(data, player, output_dir, args):
