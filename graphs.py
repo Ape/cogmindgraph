@@ -21,8 +21,9 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
                     horizontalalignment="center")
 
     def mark_extended(x, y, mask, size=80):
-        ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
-                   linewidths=0.5)
+        if mask.any():
+            ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
+                       linewidths=0.5)
 
     def plot(ax, x, y, easy, win):
         def facecolors(color):
@@ -63,7 +64,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     for easy, win in itertools.product([2, 1, 0], [-1, 0, 1]):
         plot(ax, x, y, easy, win)
 
-    mark_extended(x, y, np.nonzero(data["extended"]))
+    mark_extended(x, y, np.flatnonzero(data["extended"]))
     mark_extended(x, y, data["extended"] == "++", size=130)
 
     for i, ending in enumerate(data["ending"]):
