@@ -1,3 +1,4 @@
+import itertools
 import math
 
 import matplotlib.dates
@@ -23,27 +24,44 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
         ax.scatter(x[mask], y[mask], s=size, color="k", facecolors="none",
                    linewidths=0.5)
 
+    def plot(ax, x, y, easy, win):
+        def facecolors(color):
+            if easy > 0:
+                if win:
+                    return "w"
+
+                return "none"
+
+            return color
+
+        def linestyle():
+            if easy == 2:
+                return ":"
+
+            return "-"
+
+        mask = (data["easy"] == easy) & (data["win"] == win)
+
+        label = {
+            (2, 0): "easiest",
+            (1, 0): "easy",
+            (0, 1): "win",
+        }.get((easy, win), None)
+
+        color = {
+            -1: "#5ca3e4",
+            0: "C0",
+            1: "C1",
+        }[win]
+
+        if mask.any():
+            ax.scatter(x[mask], y[mask], label=label, color=color,
+                       facecolors=facecolors(color), linestyle=linestyle())
+
     x = data.xaxis()
-    win = data["win"] == 1
-    normal = data["easy"] == 0
-    easy = data["easy"] == 1
-    easiest = data["easy"] == 2
 
-    if easiest.any():
-        ax.scatter(x[~win & easiest], y[~win & easiest], color="C0",
-                   facecolors="none", linestyle=":", label="easiest")
-        ax.scatter(x[win & easiest], y[win & easiest], color="C1",
-                   facecolors="w", linestyle=":")
-
-    if easy.any():
-        ax.scatter(x[~win & easy], y[~win & easy], color="C0",
-                   facecolors="none", label="easy")
-        ax.scatter(x[win & easy], y[win & easy], color="C1", facecolors="w")
-
-    ax.scatter(x[~win & normal], y[~win & normal], color="C0")
-
-    if win.any():
-        ax.scatter(x[win & normal], y[win & normal], color="C1", label="win")
+    for easy, win in itertools.product([2, 1, 0], [-1, 0, 1]):
+        plot(ax, x, y, easy, win)
 
     mark_extended(x, y, np.nonzero(data["extended"]))
     mark_extended(x, y, data["extended"] == "++", size=130)
@@ -58,7 +76,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     if mark_versions:
         version_markers(ax, data)
 
-    if win.any() or easy.any() or easiest.any():
+    if len(ax.get_legend_handles_labels()[0]) > 0:
         legend(ax)
 
 
