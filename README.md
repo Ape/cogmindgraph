@@ -16,10 +16,23 @@ available online on https://ape3000.com/cogmindgraph/.
   * Required for `--format png` option
 
 ## Usage
+`cogmindgraph` can be installed from PyPI:
+
 ```
-usage: main.py [-h] [--xaxis {time,turns,actions,runs,date}] [--player PLAYER]
-               [--format {svg,png}] [--size SIZE] [--html]
-               path output
+$ pip install cogmindgraph
+```
+
+Alternatively, you can run it directly from the source:
+
+```
+$ python -m cogmindgraph
+```
+
+```
+usage: cogmindgraph [-h] [--xaxis {time,turns,actions,runs,date}]
+                    [--player PLAYER] [--format {svg,png}] [--size SIZE]
+                    [--html]
+                    path output
 
 positional arguments:
   path                  Path to Cogmind scores folder
@@ -37,5 +50,5 @@ optional arguments:
 
 For example:
 ```
-./main.py /path/to/cogmind/scores /path/to/output
+cogmindgraph /path/to/cogmind/scores /path/to/output
 ```
