@@ -27,7 +27,7 @@ def scatter_plot(ax, data, y, ymin=0, mark_versions=True):
     def plot(ax, x, y, easy, win):
         def facecolors(color):
             if easy > 0:
-                if win:
+                if win == 1:
                     return "w"
 
                 return "none"
