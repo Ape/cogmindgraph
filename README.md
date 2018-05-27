@@ -12,7 +12,7 @@ available online on https://ape3000.com/cogmindgraph/.
 * Matplotlib
 * Yattag (optional)
   * Required for `--html` option
-* cairosvg (optional)
+* resvg (optional)
   * Required for `--format png` option
 
 ## Usage

@@ -19,7 +19,7 @@ setuptools.setup(
     ],
     extras_require={
         "html": "yattag",
-        "png": "cairosvg",
+        "png": "resvg",
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",

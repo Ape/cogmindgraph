@@ -198,11 +198,8 @@ def plot(graph, data, player, output_dir, args):
     plt.close(fig)
 
     if args.format == "png":
-        dpi = args.size / fig.get_size_inches()[0]
-
-        import cairosvg
-        cairosvg.svg2png(url=str(basename.with_suffix(".svg")), dpi=dpi,
-                         write_to=str(basename.with_suffix(".png")))
+        import resvg
+        resvg.render(basename.with_suffix(".svg"), basename.with_suffix(".png"), fit_width=args.size)
 
 
 def plot_all(data, player, output_dir, args):
