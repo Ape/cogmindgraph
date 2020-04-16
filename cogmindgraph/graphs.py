@@ -105,8 +105,8 @@ def trendline(ax, data, y):
 def version_markers(ax, data):
     def label(version, position, xycoords="data"):
         ax.annotate(version.lower(), position, xycoords=xycoords,
-                    xytext=(0, -5.5), textcoords="offset points",
-                    size=6, rotation=-90, zorder=0)
+                    xytext=(0, -1), textcoords="offset points",
+                    size=6, rotation=-90, zorder=0, va="top")
 
     def changed_values(y):
         return np.where(y[:-1] != y[1:])[0] + 1
