@@ -2,7 +2,7 @@ import datetime
 
 import yattag
 
-import graphs
+from . import graphs
 
 
 def timestamp():

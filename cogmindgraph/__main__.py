@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 
-import graphs
+from . import graphs
 
 
 XAXES = {
@@ -221,7 +221,7 @@ def plot_player(x):
     plot_all(data, player, output_dir, args)
 
     if args.html:
-        import html
+        from . import html
         html.write_player_index(player, output_dir, args.format)
 
 
@@ -250,7 +250,28 @@ def generate_tasks(scores, args):
         yield player, games, args
 
 
-def main(args):
+def main():
+    parser = argparse.ArgumentParser(
+        prog="cogmindgraph",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("path", type=pathlib.Path,
+                        help="Path to Cogmind scores folder")
+    parser.add_argument("output", type=pathlib.Path,
+                        help="Path to output folder")
+    parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
+                        help="X axis variable")
+    parser.add_argument("--player", action="append", default=argparse.SUPPRESS,
+                        help="Only plot the specified player")
+    parser.add_argument("--format", choices=["svg", "png"], default="svg",
+                        help="Output image format")
+    parser.add_argument("--size", type=int, default="1280",
+                        help="Output image width")
+    parser.add_argument("--html", action="store_true",
+                        help="Make HTML index files")
+    args = parser.parse_args()
+
+    plt.switch_backend("svg")
+
     if not args.path.is_dir():
         print(f"Error: '{args.path}' is not a directory!")
         return
@@ -274,7 +295,7 @@ def main(args):
         print(f"Plotting {len(scores)} players")
 
     if args.html:
-        import html
+        from . import html
         html.write_index(scores, args.output, args.size)
 
     with multiprocessing.Pool() as pool:
@@ -283,22 +304,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    plt.switch_backend("svg")
-
-    parser = argparse.ArgumentParser(
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("path", type=pathlib.Path,
-                        help="Path to Cogmind scores folder")
-    parser.add_argument("output", type=pathlib.Path,
-                        help="Path to output folder")
-    parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
-                        help="X axis variable")
-    parser.add_argument("--player", action="append", default=argparse.SUPPRESS,
-                        help="Only plot the specified player")
-    parser.add_argument("--format", choices=["svg", "png"], default="svg",
-                        help="Output image format")
-    parser.add_argument("--size", type=int, default="1280",
-                        help="Output image width")
-    parser.add_argument("--html", action="store_true",
-                        help="Make HTML index files")
-    main(parser.parse_args())
+    main()

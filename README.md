@@ -17,9 +17,9 @@ available online on https://ape3000.com/cogmindgraph/.
 
 ## Usage
 ```
-usage: main.py [-h] [--xaxis {time,turns,actions,runs,date}] [--player PLAYER]
-               [--format {svg,png}] [--size SIZE] [--html]
-               path output
+python -m cogmindgraph [-h] [--xaxis {time,turns,actions,runs,date}]
+                       [--player PLAYER] [--format {svg,png}] [--size SIZE]
+                       [--html] path output
 
 positional arguments:
   path                  Path to Cogmind scores folder
@@ -37,5 +37,5 @@ optional arguments:
 
 For example:
 ```
-./main.py /path/to/cogmind/scores /path/to/output
+python -m cogmindgraph /path/to/cogmind/scores /path/to/output
 ```
