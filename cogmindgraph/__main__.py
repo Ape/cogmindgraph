@@ -236,7 +236,8 @@ def merge_aliases(scores):
 
     players = collections.defaultdict(list)
     for player, games in scores.items():
-        players[player.lower()].append(Alias(player, games))
+        canonical_name = player.lower().replace(".", "")
+        players[canonical_name].append(Alias(player, games))
 
     return {best_name(x): merge_games(x) for x in players.values()}
 
