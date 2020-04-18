@@ -17,7 +17,8 @@ available online on https://ape3000.com/cogmindgraph/.
 
 ## Usage
 ```
-python -m cogmindgraph [-h] [--xaxis {time,turns,actions,runs,date}]
+python -m cogmindgraph [-h] [--pb-path PB_PATH]
+                       [--xaxis {time,turns,actions,runs,date}]
                        [--player PLAYER] [--format {svg,png}] [--size SIZE]
                        [--html] path output
 
@@ -27,6 +28,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --pb-path PB_PATH     Path to additional protobuf scores (default: None)
   --xaxis {time,turns,actions,runs,date}
                         X axis variable (default: time)
   --player PLAYER       Only plot the specified player
