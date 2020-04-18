@@ -1,0 +1,3 @@
+[submodule "proto/cogmind-scoresheet"]
+	path = proto/cogmind-scoresheet
+	url = https://github.com/Kyzrati/cogmind-scoresheet.git

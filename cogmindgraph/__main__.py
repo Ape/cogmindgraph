@@ -11,6 +11,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 
+try:
+    from .gen import archived_scoresheet_pb2 as scoresheet
+except ImportError:
+    scoresheet = None
+
 from . import graphs
 
 
@@ -69,9 +74,93 @@ class Data:
         return np.array(list(generator))
 
 
-def parse_games(score_files, args):
+def parse_filename(filename):
+    parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
+                      r"(?:-\d)?--?\d+(?:_w\d*)?(\++)?\.txt$", filename)
+    player = parts[1].replace("/", "").replace(".", "")
+    extended = parts[8]
+
+    date = np.datetime64("20{}-{}-{}T{}:{}:{}"
+                         .format(*parts.groups()[1:7]))
+
+    return player, extended, date
+
+
+def parse_game_legacy(path, args):
+    try:
+        player, extended, date = parse_filename(path.name)
+    except ValueError as e:
+        print(f"Warning: {path.name}: {e}")
+        return
+
+    if "player" in args and player not in args.player:
+        return
+
+    with open(path) as game_file:
+        game = game_file.read()
+
+    return player, parse_fields(game, date, extended)
+
+
+def parse_game_pb(path, args):
+    game = scoresheet.ArchivedPostScoresheetRequest()
+
+    with open(path, "rb") as game_file:
+        game.ParseFromString(game_file.read())
+
+    sheet = game.scoresheet
+    stats = sheet.stats
+    player = sheet.header.player_name
+    _, extended, date = parse_filename(sheet.header.filename)
+
+    if "player" in args and player not in args.player:
+        return
+
+    if not sheet.stats.exploration.spaces_moved.average_speed:
+        return
+
+    win, ending = parse_ending(sheet.header.run_result.upper(),
+                               sheet.game.win_type)
+
+    time = sum(int(x) * 60**(-i)
+               for i, x in enumerate(sheet.game.run_time.split(":")))
+
+    fields = {
+        "date": date,
+        "extended": extended,
+        "win": win,
+        "ending": ending,
+        "version": re.match(r"(\w+ \d+).*", sheet.header.version)[1],
+        "easy": sheet.header.difficulty,
+        "score": sheet.performance.total_score,
+        "value": sheet.performance.value_destroyed.points,
+        "time": time,
+        "turns": stats.exploration.turns_passed,
+        "actions": stats.actions.total.overall,
+        "lore": sheet.game.lore_percent,
+        "gallery": sheet.game.gallery_percent,
+        "achievements": sheet.game.achievement_percent,
+        "speed": 100*100 / stats.exploration.spaces_moved.average_speed,
+        "regions": sheet.performance.regions_visited.count,
+        "prototypes": sheet.performance.prototypes_identified.count,
+        "parts": sheet.peak_state.rating,
+        "slots": stats.build.average_slot_usage_percent.overall,
+        "damage": stats.combat.damage_inflicted.overall,
+        "melee": stats.combat.damage_inflicted.melee,
+        "em": stats.combat.damage_inflicted.electromagnetic,
+        "core": stats.combat.core_remaining_percent,
+        "hacking": sheet.best_states.offensive_hacking,
+        "capacity": stats.build.largest_inventory_capacity.average_capacity,
+        "influence": stats.alert.peak_influence.average_influence,
+        "best_group": stats.allies.total_allies.highest_rated_group,
+    }
+
+    return player, fields
+
+
+def parse_games(score_files, args, func=parse_game_legacy):
     for path in score_files:
-        result = parse_game(path, args)
+        result = func(path, args)
 
         if not result:
             continue
@@ -82,6 +171,22 @@ def parse_games(score_files, args):
             yield player, game
 
 
+def parse_ending(ending, win_type):
+    if ending == "SELF-DESTRUCTED":
+        return -1, ""
+
+    if ending in LOSS_ENDINGS:
+        return 0, LOSS_ENDINGS[ending]
+
+    if win_type < 0:
+        return 0, ""
+
+    if win_type > 0:
+        return 1, str(win_type)
+
+    return 1, ""
+
+
 def parse_fields(game, date, extended):
     def find(pattern, default=np.nan, type=float):
         match = re.search(pattern, game, re.DOTALL)
@@ -90,22 +195,8 @@ def parse_fields(game, date, extended):
 
         return default
 
-    def parse_ending():
-        ending = find(r"---\[ (.*) \]---", type=str)
-
-        if ending == "SELF-DESTRUCTED":
-            return -1, ""
-
-        if ending in LOSS_ENDINGS:
-            return 0, LOSS_ENDINGS[ending]
-
-        win_type = find(r"Win Type: (\d+)", type=int)
-        if win_type > 0:
-            return 1, str(win_type)
-
-        return 1, ""
-
-    win, ending = parse_ending()
+    win, ending = parse_ending(find(r"---\[ (.*) \]---", type=str),
+                               find(r"Win Type: (\d+)", type=int))
 
     return {
         "date": date,
@@ -136,28 +227,6 @@ def parse_fields(game, date, extended):
         "influence": find(r"Average Influence\s+(\d+)"),
         "best_group": find(r"Highest-Rated Group\s+(\d+)"),
     }
-
-
-def parse_game(path, args):
-    parts = re.search(r"(.*)-(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)"
-                      r"(?:-\d)?--?\d+(?:_w\d*)?(\++)?\.txt$", path.name)
-    player = parts[1].replace("/", "").replace(".", "")
-    extended = parts[8]
-
-    if "player" in args and player not in args.player:
-        return
-
-    try:
-        date = np.datetime64("20{}-{}-{}T{}:{}:{}"
-                             .format(*parts.groups()[1:7]))
-    except ValueError as e:
-        print(f"Warning: {path.name}: {e}")
-        return
-
-    with open(path) as game_file:
-        game = game_file.read()
-
-    return player, parse_fields(game, date, extended)
 
 
 def plot(graph, data, player, output_dir, args):
@@ -259,6 +328,8 @@ def main():
                         help="Path to Cogmind scores folder")
     parser.add_argument("output", type=pathlib.Path,
                         help="Path to output folder")
+    parser.add_argument("--pb-path", type=pathlib.Path,
+                        help="Path to additional protobuf scores")
     parser.add_argument("--xaxis", choices=XAXES.keys(), default="time",
                         help="X axis variable")
     parser.add_argument("--player", action="append", default=argparse.SUPPRESS,
@@ -284,6 +355,19 @@ def main():
 
     for player, game in parse_games(score_files, args):
         scores[player].append(game)
+
+    if args.pb_path:
+        if not scoresheet:
+            print(f"Error: Run ./build_proto.sh in order to use '--pb-path'!")
+            return
+
+        if not args.pb_path.is_dir():
+            print(f"Error: '{args.pb_path}' is not a directory!")
+            return
+
+        for player, game in parse_games(args.pb_path.glob("*"), args,
+                                        func=parse_game_pb):
+            scores[player].append(game)
 
     scores = merge_aliases(scores)
     scores = {k: v for k, v in scores.items() if len(v) >= 2}
